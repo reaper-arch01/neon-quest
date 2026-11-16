@@ -521,3 +521,6 @@ body:has(.ovl.on) .panel{backdrop-filter:none;-webkit-backdrop-filter:none}
 .toast{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;text-wrap:pretty;text-wrap:balance}
 /* undo snack (54px, sits tab+14px above the bottom) must never cover the last control on a page: reserve room for it below the content */
 main.wrap{padding-bottom:calc(var(--tab) + 84px + env(safe-area-inset-bottom))}
+/* n12 (SPEC §2.2 follow-ups): a toast hides the partner bubble instantly (no fade-out overlap); evolution form names never break inside a name */
+.pbub.cut{transition:none;opacity:0}
+.evo-card b .fn{display:inline;white-space:nowrap;font:inherit;color:inherit;letter-spacing:inherit}

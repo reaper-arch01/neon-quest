@@ -7,7 +7,7 @@
    - Updates: the new worker waits until the page says it's idle (message "SKIP_WAITING"), then takes over;
      the page reloads once on controllerchange. A first install (no page controlled yet) activates at once.
    All URLs are relative to this file, so it works under /neon-quest/. */
-const BUILD="2026.11.16-n11";
+const BUILD="2026.11.16-n12";
 const VERSION="nq-"+BUILD;
 const IDS=["pyrobyte","jellix","ohmlet","nullmoth","cryoslug","mossybara","chromadillo","toxeko","ampcrab","nebuluga",
  "akumaru","seraphine","gantetsu","kazekiri","renka","shimo","namiko","kagerou","raika","tekko"];

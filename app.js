@@ -172,7 +172,7 @@ function flushToast(){if(toastBlocked())return;clearInterval(toastW);toastW=null
 /* each " ·" is glued to the word before it with a nowrap span (text stays "A · B" for copy/AT), so no line starts with a dot */
 function toastNodes(t){const out=[],parts=t.split(" · ");parts.forEach((pt,i)=>{if(i===parts.length-1){out.push(pt);return}
  const k=pt.lastIndexOf(" "),sp=document.createElement("span");sp.className="nb";sp.textContent=pt.slice(k+1)+" ·";if(k>=0)out.push(pt.slice(0,k+1));out.push(sp," ")});return out}
-function showToast(t){const e=$("toast");e.replaceChildren(...toastNodes(t));e.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("on"),2200);announce(t)}
+function showToast(t){const e=$("toast");e.replaceChildren(...toastNodes(t));e.classList.add("on");if(typeof toastHidesBub==="function")toastHidesBub();clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("on"),2200);announce(t)}
 function flick(el,v){const s=String(v);if(el.textContent===s&&el.dataset.i)return;if(RM()||!el.dataset.i){el.textContent=s;el.dataset.i=1;return}
  let n=0;clearInterval(el._f);el._f=setInterval(()=>{el.textContent=s.replace(/\d/g,()=>Math.floor(Math.random()*10));if(++n>=5){clearInterval(el._f);el.textContent=s}},30)}
 /* ===== render ===== */

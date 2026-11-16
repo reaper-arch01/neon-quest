@@ -53,8 +53,21 @@ let bubT=0;
 function placeBub(b){const pc=$("pcard"),pa=$("partner"),lv=pc&&pc.querySelector(".lvrow"),host=b.offsetParent;if(!pc||!pa||!lv||!host||!pc.offsetParent)return;
  const hr=host.getBoundingClientRect(),cr=pc.getBoundingClientRect(),pr=pa.getBoundingClientRect(),lr=lv.getBoundingClientRect();
  b.style.maxWidth=Math.floor(cr.width*.58)+"px";b.style.left=Math.round(cr.left+12-hr.left)+"px";b.style.top="auto";
- b.style.bottom=Math.round(hr.bottom-(Math.min(lr.top,pr.top)-6))+"px"}
-function say(txt,el){if(!txt||!S.settings.bubbles)return;const b=el||$("pBub");b.textContent=txt;if(b.id==="pBub")placeBub(b);b.classList.add("on");clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove("on"),3000)}
+ /* V3-26 (SPEC §2.2): anchor with top: the bubble's bottom edge sits 6 px above the higher of the buddy's head and the level row,
+    so it follows the top of the card and never the bottom of the (growing) container. Height is the unscaled layout height. */
+ const cs=getComputedStyle(b),bh=cs.boxSizing==="border-box"?parseFloat(cs.height):parseFloat(cs.height)+parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom)+parseFloat(cs.borderTopWidth)+parseFloat(cs.borderBottomWidth);
+ /* same rounding as the old bottom anchor, so the normal position is pixel-identical to n11 (V3-15) */
+ const y=Math.min(lr.top,pr.top)-6,yb=hr.bottom-Math.round(hr.bottom-y);
+ b.style.bottom="auto";b.style.top=(yb-hr.top-(bh||b.offsetHeight))+"px"}
+/* V3-26: re-place a showing bubble whenever the mission list re-renders (add / remove / complete / reroll / rollover) and on resize */
+let bubRaf=0;function rePlaceBub(){if(bubRaf)return;bubRaf=requestAnimationFrame(()=>{bubRaf=0;const b=$("pBub");if(b&&b.classList.contains("on")&&!document.querySelector(".ovl.on"))placeBub(b)})}  /* coalesced to one placement per frame; skipped under an overlay */
+try{const mo=new MutationObserver(rePlaceBub);["mList","sjList"].forEach(i=>mo.observe($(i),{childList:true,subtree:true,attributes:true,attributeFilter:["class"]}))}catch(e){}
+window.addEventListener("resize",rePlaceBub)
+/* n12 (SPEC §2.2 follow-up a): the partner bubble and a toast never overlap. A toast hides the bubble at once (toastHidesBub, called from showToast);
+   a reaction that arrives while a toast is still on screen is dropped, and the bubble returns on the next buddy reaction, not when the toast ends */
+const toastOn=()=>{const t=$("toast");return !!t&&t.classList.contains("on")};
+function toastHidesBub(){const b=$("pBub");if(!b)return;clearTimeout(b._t);b.classList.add("cut");b.classList.remove("on")}
+function say(txt,el){if(!txt||!S.settings.bubbles)return;const b=el||$("pBub");if(b.id==="pBub"&&toastOn()){toastHidesBub();return}b.classList.remove("cut");b.textContent=txt;if(b.id==="pBub")placeBub(b);b.classList.add("on");clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove("on"),3000)}
 const pickLine=(id,k)=>{const a=BUDDIES[id].lines[k];return Array.isArray(a)?a[Math.floor(Math.random()*a.length)]:a};
 function anim(el,frames,opt){if(RM()||!el.animate)return null;try{return el.animate(frames,Object.assign({duration:350,easing:"cubic-bezier(.2,1.4,.4,1)"},opt))}catch(e){return null}}
 function emote(svg,dy){const e=$("pEmote");e.innerHTML=svg;if(RM()){e.style.opacity=1;setTimeout(()=>e.style.opacity=0,900);return}
@@ -175,7 +188,9 @@ async function runEvolution(id,from,to,opt){const b=BUDDIES[id],o=$("evo"),st=$(
  [eo,eow].forEach(i=>i.src=oldU);[enw,en].forEach(i=>i.src=newU);[eo,eow,enw,en].forEach(i=>{i.style.opacity=0;i.style.transform=""});
  o.style.setProperty("--el",elCol(id));o.classList.toggle("final",fin&&A!=="off");o.classList.remove("evdone");$("evoRing").className="evo-ring";$("evoCard").className="evo-card";$("evoBub").textContent="";q.className="evo-q";st.className="evo-stage";
  $("evoTop").innerHTML="";const top=document.createElement("span");top.textContent=b.name+" IS EVOLVING";const kt=document.createElement("i");kt.textContent="進化";kt.setAttribute("aria-hidden","true");$("evoTop").append(top,kt);
- $("evoNames").replaceChildren(b.forms[from].toUpperCase()+" ",ic("arrow-right")," "+b.forms[to].toUpperCase());$("evoForm").textContent="FORM "+(to+1)+" / 6";
+ /* n12 (SPEC §2.2 follow-up b): each form name is its own nowrap span and the arrow is glued to the first name, so the line can only break after the arrow; textContent stays "A → B" */
+ const fnS=t=>{const e=document.createElement("span");e.className="fn";e.textContent=t;return e},fnA=document.createElement("span");fnA.className="fn";fnA.append(fnS(b.forms[from].toUpperCase())," ",ic("arrow-right"));
+ $("evoNames").replaceChildren(fnA," ",fnS(b.forms[to].toUpperCase()));$("evoForm").textContent="FORM "+(to+1)+" / 6";
  const btn=$("evoBtn");btn.style.visibility="hidden";o.classList.add("on");openTrap(o,btn);announce(b.name+" is evolving");
  let skip=false,t0=performance.now();const wait=ms=>new Promise(r=>{const end=performance.now()+ms;const chk=()=>{if(skip||performance.now()>=end)r();else setTimeout(chk,Math.min(40,end-performance.now()))};chk()});
  o.onclick=e=>{if(e.target===btn)return;if(performance.now()-t0>600)skip=true};
