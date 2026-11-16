@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NEON//QUEST v3 icon sprite. No outer width/height.
+     Each symbol is 24×24, stroke=currentColor, fill=none, stroke-width 2,
+     round caps/joins, cyberpunk-geometric. Use via:
+     <svg class="ic" aria-hidden="true"><use href="assets/icons.svg#i-name"/></svg>
+     External <use> works same-origin (GitHub Pages) and offline if sw.js
+     precaches assets/icons.svg. 🔥 and 🔒 stay as emoji. -->
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- ◈ QUESTS tab -->
+  <symbol id="i-quests" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3L21 12L12 21L3 12Z"/>
+    <path d="M12 8.5L15.5 12L12 15.5L8.5 12Z"/>
+  </symbol>
+  <!-- ▤ STATS tab -->
+  <symbol id="i-stats" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="4" width="16" height="16"/>
+    <line x1="4" y1="9.33" x2="20" y2="9.33"/>
+    <line x1="4" y1="14.67" x2="20" y2="14.67"/>
+  </symbol>
+  <!-- ⌬ RANKS tab + NETRUNNER rank -->
+  <symbol id="i-ranks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.000 3.000 19.794 7.500 19.794 16.500 12.000 21.000 4.206 16.500 4.206 7.500Z"/>
+    <circle cx="12" cy="12" r="3.6"/>
+  </symbol>
+  <!-- ⌘ TECHNOMANCER rank -->
+  <symbol id="i-command" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>
+  </symbol>
+  <!-- ⚙ SYSTEM tab + FIXER rank -->
+  <symbol id="i-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.570 5.096 10.591 2.100 13.409 2.100 13.430 5.096 15.871 6.108 18.004 4.003 19.997 5.996 17.892 8.129 18.904 10.570 21.900 10.591 21.900 13.409 18.904 13.430 17.892 15.871 19.997 18.004 18.004 19.997 15.871 17.892 13.430 18.904 13.409 21.900 10.591 21.900 10.570 18.904 8.129 17.892 5.996 19.997 4.003 18.004 6.108 15.871 5.096 13.430 2.100 13.409 2.100 10.591 5.096 10.570 6.108 8.129 4.003 5.996 5.996 4.003 8.129 6.108Z"/>
+    <circle cx="12" cy="12" r="2.6"/>
+  </symbol>
+  <!-- ★ CYBER LEGEND rank -->
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.000 2.600 14.439 8.643 20.940 9.095 15.947 13.282 17.525 19.605 12.000 16.150 6.475 19.605 8.053 13.282 3.060 9.095 9.561 8.643Z"/>
+  </symbol>
+  <!-- ♛ NIGHT CITY ICON rank -->
+  <symbol id="i-crown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 16L5.5 8L9 13.5L12 6L15 13.5L18.5 8L20 16V19H4V16Z"/>
+  </symbol>
+  <!-- ⚔ CHROME SAMURAI rank -->
+  <symbol id="i-swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="5.5" y1="20" x2="18.5" y2="4"/>
+    <line x1="3.8" y1="17.2" x2="8.2" y2="20.2"/>
+    <line x1="18.5" y1="20" x2="5.5" y2="4"/>
+    <line x1="15.8" y1="20.2" x2="20.2" y2="17.2"/>
+  </symbol>
+  <!-- ✦ SOLO rank -->
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.000 2.400 14.150 9.850 21.600 12.000 14.150 14.150 12.000 21.600 9.850 14.150 2.400 12.000 9.850 9.850Z"/>
+  </symbol>
+  <!-- ◎ GHOST IN THE SHELL rank -->
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.5"/>
+    <circle cx="12" cy="12" r="3.6"/>
+  </symbol>
+  <!-- ▷ RUNNER rank -->
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 5L19 12L8 19Z"/>
+  </symbol>
+  <!-- ◇ STREET RAT rank + header rank badge -->
+  <symbol id="i-diamond" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3L21 12L12 21L3 12Z"/>
+  </symbol>
+  <!-- ∞ AWAKENED rank -->
+  <symbol id="i-infinity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12C5 8 9 8 12 12C15 16 19 16 19 12C19 8 15 8 12 12C9 16 5 16 5 12Z"/>
+  </symbol>
+  <!-- ↻ Mission reroll button -->
+  <symbol id="i-reroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18.5 8.25A7.5 7.5 0 1 1 12 4.5"/>
+    <polyline points="8.6 7.38 12.6 4.5 8.6 1.62"/>
+  </symbol>
+  <!-- ✕ Close / delete -->
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="6" y1="6" x2="18" y2="18"/>
+    <line x1="18" y1="6" x2="6" y2="18"/>
+  </symbol>
+  <!-- ✓ Completed (past) rank marker -->
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 12 10 17 19 7"/>
+  </symbol>
+  <!-- → XP-to-next and evolution name separator -->
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="4" y1="12" x2="20" y2="12"/>
+    <polyline points="14 6 20 12 14 18"/>
+  </symbol>
+  <!-- ▸ LEVEL TABLE collapsed -->
+  <symbol id="i-caret-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 6 15 12 9 18"/>
+  </symbol>
+  <!-- ▾ LEVEL TABLE expanded -->
+  <symbol id="i-caret-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </symbol>
+  <!-- ◀ Current-level marker in the level table -->
+  <symbol id="i-caret-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 6 9 12 15 18"/>
+  </symbol>
+</svg>
