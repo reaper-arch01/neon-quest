@@ -1,4 +1,4 @@
-/* NEON//QUEST v3 service worker.
+/* NEON//QUEST v3 / v3.1 service worker.
    - Versioned, atomic: every build precaches its whole shell into its own cache (nq-<BUILD>) with
      cache:'reload' requests, so GitHub Pages' 10-minute HTTP cache can never leak old files into a new build.
    - Cache-first from THIS build's cache only, so a page never gets a mix of old and new files.
@@ -7,7 +7,7 @@
    - Updates: the new worker waits until the page says it's idle (message "SKIP_WAITING"), then takes over;
      the page reloads once on controllerchange. A first install (no page controlled yet) activates at once.
    All URLs are relative to this file, so it works under /neon-quest/. */
-const BUILD="2026.11.16-n12";
+const BUILD="2026.11.16-v31b";
 const VERSION="nq-"+BUILD;
 const IDS=["pyrobyte","jellix","ohmlet","nullmoth","cryoslug","mossybara","chromadillo","toxeko","ampcrab","nebuluga",
  "akumaru","seraphine","gantetsu","kazekiri","renka","shimo","namiko","kagerou","raika","tekko"];
@@ -34,7 +34,10 @@ self.addEventListener("install",e=>{e.waitUntil((async()=>{const c=await caches.
  const id=await getPartner();if(id){await setPartner(id);await cachePartner(c,id)}
  /* first install: nothing to keep consistent with, so take over now */
  const cl=await self.clients.matchAll({type:"window",includeUncontrolled:true});if(!self.registration.active||!cl.length)self.skipWaiting()})())});
-self.addEventListener("activate",e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==VERSION)await caches.delete(k);await self.clients.claim()})())});
+/* activate: drop the other caches, claim (n12 tabs reload through their own controllerchange guard), then tell every window
+   to reload [G-02]; v3.1 pages only act on it if they run another build, through their single-reload guard */
+self.addEventListener("activate",e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==VERSION)await caches.delete(k);await self.clients.claim();
+ for(const c of await self.clients.matchAll({type:"window"}))try{c.postMessage({type:"RELOAD",build:BUILD})}catch(_){}})())});
 self.addEventListener("message",e=>{const d=e.data||{};
  if(d.type==="SKIP_WAITING")self.skipWaiting();
  else if(d.type==="PARTNER")e.waitUntil((async()=>{await setPartner(d.id);await cachePartner(await caches.open(VERSION),d.id)})());

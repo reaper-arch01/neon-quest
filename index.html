@@ -61,6 +61,7 @@
    <div class="cd">RESET IN <b id="cd">--:--:--</b></div>
    <div class="list" id="mList"></div>
    <button class="btn wide" id="extraBtn">+ EXTRA MISSION</button>
+   <div class="dim" id="swapNote" hidden></div>
   </div>
 
   <div class="panel side">
@@ -91,6 +92,9 @@
     <div><b id="sMis">0</b><span>MISSIONS</span></div>
     <div><b id="sPerf">0</b><span>PERFECT DAYS</span></div>
     <div><b id="sDays">0</b><span>DAYS ACTIVE</span></div>
+    <div><b id="sWork">0</b><span>WORK DAYS</span></div>
+    <div><b id="sWorkMis">0</b><span>WORK MISSIONS</span></div>
+    <div><b id="sSwaps">0</b><span>SWAPS</span></div>
    </div>
   </div>
   <div class="panel"><h2>CATEGORIES <small>LIFETIME</small></h2><div id="cats"></div></div>
@@ -127,6 +131,20 @@
    <h2><span class="rib">SYSTEM</span><i class="kt" aria-hidden="true">設定</i> <small>CALLSIGN</small></h2>
    <form class="fld" id="csForm" autocomplete="off"><input id="csIn" maxlength="16" aria-label="Callsign" enterkeyhint="done"><button class="btn" type="submit">SET</button></form>
   </div>
+  <div class="panel" id="wkPanel">
+   <h2><span class="rib">WORK SCHEDULE</span><i class="kt" aria-hidden="true">勤務</i></h2>
+   <button class="tg" role="switch" id="wkOn" aria-checked="true"><span>WORK SCHEDULE<small>Work-friendly missions on shift days</small></span><i class="sw"></i></button>
+   <div id="wkBody">
+    <div style="margin-top:14px">SHIFT DAYS<div class="dim">Days a shift starts</div>
+     <div class="seg days" id="wkDays"><button class="btn" data-d="0" aria-label="Sunday shift">SUN</button><button class="btn" data-d="1" aria-label="Monday shift">MON</button><button class="btn" data-d="2" aria-label="Tuesday shift">TUE</button><button class="btn" data-d="3" aria-label="Wednesday shift">WED</button><button class="btn" data-d="4" aria-label="Thursday shift">THU</button><button class="btn" data-d="5" aria-label="Friday shift">FRI</button><button class="btn" data-d="6" aria-label="Saturday shift">SAT</button></div></div>
+    <div style="margin-top:14px">SHIFT HOURS
+     <form id="wkForm" autocomplete="off" novalidate><input type="time" step="900" id="wkStart" aria-label="Shift start time"><span aria-hidden="true">–</span><input type="time" step="900" id="wkEnd" aria-label="Shift end time"><button class="btn" type="submit">SET</button></form>
+     <div class="dim" id="wkNote"></div>
+     <div class="wkerr" id="wkErr" role="alert" hidden></div>
+     <div class="dim" id="wkWarn" hidden></div></div>
+    <div class="dim" style="margin-top:10px">Mission changes apply from the next reset. Buddy quiet hours update right away.</div>
+   </div>
+  </div>
   <div class="panel">
    <h2><span class="rib">SETTINGS</span></h2>
    <button class="tg" role="switch" data-set="sound" aria-checked="false"><span>SOUND FX<small>Short synth blips</small></span><i class="sw"></i></button>
@@ -136,8 +154,9 @@
    <button class="tg" role="switch" data-set="bubbles" aria-checked="true"><span>BUDDY VOICE BUBBLES<small>Speech bubbles from your partner</small></span><i class="sw"></i></button>
    <div style="margin-top:14px">ANIMATION INTENSITY<div class="dim" id="animNote">FULL: everything · LITE: no speed lines or particles · OFF: simple fades</div>
     <div class="seg" id="animSeg"><button class="btn" data-a="full">FULL</button><button class="btn" data-a="lite">LITE</button><button class="btn" data-a="off">OFF</button></div></div>
-   <div style="margin-top:14px">DAY RESET HOUR<div class="dim">For night owls: the day rolls over at this hour.</div>
-    <div class="seg" id="rhSeg"><button class="btn" data-h="0">0:00</button><button class="btn" data-h="3">3:00</button><button class="btn" data-h="4">4:00</button></div></div>
+   <div style="margin-top:14px">DAY RESET HOUR<div class="dim">Your day rolls over at this hour. 12:00 keeps a night shift inside one day.</div>
+    <div class="seg" id="rhSeg"><button class="btn" data-h="0">0:00</button><button class="btn" data-h="3">3:00</button><button class="btn" data-h="4">4:00</button><button class="btn" data-h="12">12:00</button></div>
+    <div class="dim" id="rhNote" hidden></div></div>
   </div>
   <div class="panel">
    <h2><span class="rib">SAVE DATA</span></h2>
@@ -156,7 +175,7 @@
    <p>Reaching level 100 takes <b>58,410 XP</b> in total. Each day you get 5 missions, up to 3 extra missions, and up to 3 XP-earning side jobs. Missing a day only resets your streak, never your XP.</p>
   </div>
   <div class="panel" id="instPanel" hidden><h2><span class="rib">INSTALL</span></h2><button class="btn wide" id="instBtn">INSTALL APP</button><div class="dim" style="margin-top:8px">Adds NEON//QUEST to your home screen. Works offline.</div></div>
-  <div class="ver">NEON//QUEST v3.0 · saves in this browser only</div>
+  <div class="ver">NEON//QUEST v3.1 · saves in this browser only</div>
  </section>
 </main>
 

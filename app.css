@@ -524,3 +524,32 @@ main.wrap{padding-bottom:calc(var(--tab) + 84px + env(safe-area-inset-bottom))}
 /* n12 (SPEC §2.2 follow-ups): a toast hides the partner bubble instantly (no fade-out overlap); evolution form names never break inside a name */
 .pbub.cut{transition:none;opacity:0}
 .evo-card b .fn{display:inline;white-space:nowrap;font:inherit;color:inherit;letter-spacing:inherit}
+
+/* ===== v3.1 (SPEC-v3.1): Can't-today swap button, WORK SCHEDULE panel ===== */
+.ct{width:44px;min-width:44px;min-height:44px;flex-shrink:0;color:var(--pink);border-left:1px solid var(--line)}
+.ct .ic{width:22px;height:22px}
+.ct.gone{visibility:hidden;pointer-events:none} /* done or already swapped: hidden, keeps its 44px column */
+.ct[aria-disabled=true]{color:var(--dim2)}     /* cap reached / no candidate: visible, tap shows the reason */
+#swapNote{margin-top:8px}#swapNote .ic{width:14px;height:14px;color:var(--pink);vertical-align:-2px}
+.seg.days{flex-wrap:wrap;gap:2px}.seg.days .btn{flex:1 0 44px;min-width:44px;min-height:44px;padding:0 2px}
+@media (max-width:375px){.seg.days{gap:4px}.seg.days .btn{flex-basis:calc(25% - 3px)}} /* 4 + 3 chips when 7 don't fit in one row */
+#wkForm{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
+#wkForm input{flex:1 1 130px;min-height:44px;font-size:16px;color-scheme:dark}
+#wkForm .btn{flex:1 0 68px}
+#wkForm>span{color:var(--dim2)}
+#wkNote{margin-top:6px}
+.wkerr{color:var(--pink);font-size:12px;margin-top:6px}
+#wkWarn{margin-top:6px}
+#rhNote{margin-top:6px}
+
+/* D-1 (SPEC-v3.1 §10): the swap + reroll pair. Above 400 px the wrapper is transparent (layout unchanged: two 44 px columns).
+   At <= 400 px: ONE 44 px column with n12's left divider; reroll on top, swap below, 4 px gap, centred vertically; a button that doesn't apply is
+   removed so the other sits alone, centred. The column stays (empty) on a done card, like n12's hidden reroll keeps its column. */
+.acts{display:contents}
+.tag .tk{white-space:nowrap}
+@media (max-width:400px){
+ .acts{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;box-sizing:border-box;width:44px;min-width:44px;flex-shrink:0;border-left:1px solid var(--line)}
+ .acts .ct,.acts .rr{width:44px;min-width:44px;height:44px;min-height:44px;flex:none;border-left:0;margin-left:-1px} /* 44x44 over the divider, as n12's reroll */
+ .acts .rr{order:-1}
+ .acts .ct.gone,.acts .rr:disabled{display:none}
+}

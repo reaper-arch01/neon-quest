@@ -98,4 +98,11 @@
   <symbol id="i-caret-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="15 6 9 12 15 18"/>
   </symbol>
+  <!-- 💼 Can't today (work swap) -->
+  <symbol id="i-cant" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 8h14l2 2v9H3v-9z"/>
+    <path d="M9 8V5h6v3"/>
+    <path d="M3 13h18"/>
+    <path d="M12 12v2"/>
+  </symbol>
 </svg>

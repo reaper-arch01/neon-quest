@@ -77,6 +77,8 @@ function buddyReact(type,o={}){const id=curId();if(!id)return;const act=document
  if(type==="task"){anim(act,[{transform:"translateY(0) scale(1,1)"},{transform:"translateY(2px) scale(1.08,.9)",offset:.15},{transform:"translateY(-22px) scale(.95,1.06)",offset:.5},{transform:"translateY(0) scale(1.04,.96)",offset:.85},{transform:"none"}],{duration:420,easing:"ease-out"});
   emote(EMO[o.cat]||EMO.SKILL);say(o.fav&&Math.random()<.6?BUDDIES[id].lines.fav:pickLine(id,"task"));
   if(o.fav){setTimeout(()=>emote(EMO.HEART),700);const[x,y]=partnerCenter();burst(x,y-30,10,"SOUND","burst","#ff2bd6")}}
+ /* v3.1 §5.4: Can't-today swap: a side-step, the category emote and a swap line; no particles (OFF / reduced motion: no side-step, static emote) */
+ else if(type==="swap"){anim(act,[{transform:"translateX(0)"},{transform:"translateX(-10px)",offset:.4},{transform:"translateX(0)"}],{duration:360,easing:"ease-out"});emote(EMO[o.cat]||EMO.SKILL);say(pickLine(id,"swap"))}
  else if(type==="allClear"){anim(act,[{transform:"none"},{transform:"translateY(-26px) rotate(180deg) scale(1.05)",offset:.45},{transform:"translateY(-10px) rotate(360deg)",offset:.75},{transform:"none"}],{duration:900,easing:"cubic-bezier(.3,.7,.4,1)"});
   say(pickLine(id,"allClear"));const[x,y]=partnerCenter();setTimeout(()=>burst(x,y-20,46,BUDDIES[id].element,"confetti"),300)}
  else if(type==="undo"){anim(act,[{transform:"none"},{transform:"rotate(-12deg)",offset:.25},{transform:"rotate(-10deg)",offset:.8},{transform:"none"}],{duration:1000,easing:"ease-in-out"});emote(EMO.Q)}
@@ -87,7 +89,22 @@ function renderPartner(){if(typeof tellPartner==="function")try{tellPartner()}ca
  if(img.getAttribute("src")!==u)img.src=u;img.alt=b.name+", "+b.forms[f];pc.style.setProperty("--aura",AURA[f]+"px");
  const part=$("partner");part.className="partner "+b.kind+" t"+(f<2?1:f<4?2:3);$("tFace").src=faceUrl(id);$("tFace").alt="";
  if(f<5)preload(spriteUrl(id,f+1));
- const today=S.today&&S.history[S.today.day],none=!today||!today.done;part.classList.toggle("drowsy",none&&new Date().getHours()>=18)}
+ updateMood()}
+/* v3.1 §4.2: buddy quiet hours follow the LIVE work schedule. Shift instances come from the calendar dates yesterday, today and tomorrow (local wall clock). */
+function shifts(now){const w=S.settings.work,len=(w.end-w.start+1440)%1440,d=new Date(now),out=[];
+ for(let o=-1;o<=1;o++){const D=new Date(d.getFullYear(),d.getMonth(),d.getDate()+o);if(!w.days[D.getDay()])continue;
+  out.push({s:new Date(D.getFullYear(),D.getMonth(),D.getDate(),0,w.start).getTime(),e:new Date(D.getFullYear(),D.getMonth(),D.getDate(),0,w.start+len).getTime()})}return out}
+const inShift=n=>S.settings.work.on&&shifts(n).some(x=>n>=x.s&&n<x.e);
+const inPrework=n=>S.settings.work.on&&!inShift(n)&&shifts(n).some(x=>n>=x.s-72e5&&n<x.s);          /* the 2 h before a start */
+const homeShift=n=>S.settings.work.on&&!inShift(n)?shifts(n).find(x=>n>=x.e&&n<x.e+108e5)||null:null; /* the 3 h after an end */
+function sleepyNow(n=Date.now()){const h=S.today&&S.history[S.today.day];if(h&&h.done)return false;
+ if(!S.settings.work.on)return new Date(n).getHours()>=18;   /* schedule off: exactly n12 */
+ if(inShift(n))return false;                                 /* never during a shift */
+ if(inPrework(n))return true;                                /* the pre-shift window */
+ if(S.today&&isShiftDay(S.today.day))return false;           /* shift-day keys: only the pre-shift window */
+ return new Date(n).getHours()>=18}                          /* off-day keys: the n12 rule */
+/* only the drowsy pose; called from renderPartner and the 30 s interval, so it turns on/off with no interaction */
+function updateMood(){const p=$("partner");if(!p||!S||!curId())return;p.classList.toggle("drowsy",sleepyNow())}
 let squashT=0;
 function idleSquash(){clearTimeout(squashT);squashT=setTimeout(()=>{if(curId()&&!document.hidden&&$("v-quests").classList.contains("on"))anim(document.querySelector("#pBud .bact"),[{transform:"none"},{transform:"scale(1.06,.93)",offset:.3},{transform:"scale(.97,1.03)",offset:.65},{transform:"none"}],{duration:600,easing:"ease-in-out"});idleSquash()},7000+Math.random()*3000)}
 
@@ -238,9 +255,11 @@ $("instBtn").onclick=async()=>{if(!instEvt)return;instEvt.prompt();try{await ins
 window.addEventListener("appinstalled",()=>{$("instPanel").hidden=true;toast("INSTALLED · RUNS OFFLINE")});
 
 /* ---------- daily buddy lines ---------- */
-function openingLine(){const id=curId();if(!id)return;const k=S.today&&S.today.day;
+/* v3.1 §4.2 order: missed, home (once per shift, 3 h after it ends), prework (2 h before a shift), idle, greet. Never idle/drowsy during a shift. */
+function openingLine(){const id=curId();if(!id)return;const k=S.today&&S.today.day,now=Date.now();
  if(S.missedDay&&S.missedDay===k){S.missedDay=null;save();setTimeout(()=>say(pickLine(id,"missed")),700);return}
- const h=S.today&&S.history[k];if((!h||!h.done)&&new Date().getHours()>=18){setTimeout(()=>say(pickLine(id,"idle")),700);return}
+ const hs=homeShift(now);if(hs){const hk=dayKeyAt(hs.s,S.settings.resetHour); /* [G-06] a real day key */if(S.lastHome!==hk){S.lastHome=hk;save();setTimeout(()=>say(pickLine(id,"home")),700);return}}
+ if(sleepyNow(now)){const pw=inPrework(now);setTimeout(()=>say(pickLine(id,pw?"prework":"idle")),700);return}
  setTimeout(()=>say(pickLine(id,"greet")),700)}
 
 /* ---------- PWA: relative scope so it works under /neon-quest/ ---------- */
@@ -249,6 +268,14 @@ function openingLine(){const id=curId();if(!id)return;const k=S.today&&S.today.d
    evolution or pending undo), and reload once on controllerchange (guarded so it can never loop). */
 const SWC="serviceWorker" in navigator&&/^https?:$/.test(location.protocol)?navigator.serviceWorker:null;
 let swReg=null,swHadCtl=!!(SWC&&SWC.controller),swReloading=false,toldPartner;
+const APP_BUILD="2026.11.16-v31b";   /* must equal BUILD in sw.js */
+const SW_RELOAD_MAX=2;
+function swGuardedReload(){if(swReloading)return;swReloading=true;
+ /* loop guard (App Creator ruling): at most SW_RELOAD_MAX reloads inside a minute (controllerchange and RELOAD share it); a further request is suppressed */
+ let hist=[];try{hist=JSON.parse(sessionStorage.getItem("nq_sw_reload")||"[]").filter(t=>typeof t==="number"&&Date.now()-t<60000)}catch(e){hist=[]}
+ if(hist.length>=SW_RELOAD_MAX)return;
+ try{hist.push(Date.now());sessionStorage.setItem("nq_sw_reload",JSON.stringify(hist))}catch(e){}
+ save();location.reload()}
 function appBusy(){return !!document.querySelector(".ovl.on,#picker.on,#reveal.on,#snack.on,#pkSheet.on")}
 function applyUpdate(){if(!swReg||!swReg.waiting||!SWC.controller)return;
  if(appBusy()&&!document.hidden){clearTimeout(applyUpdate.t);applyUpdate.t=setTimeout(applyUpdate,1500);return}
@@ -257,12 +284,9 @@ function tellPartner(force){if(!SWC||!SWC.controller)return;const id=curId()||""
 if(SWC){
  SWC.addEventListener("controllerchange",()=>{
   if(!swHadCtl){swHadCtl=true;tellPartner(true);return}   /* first install claimed this page: nothing to reload */
-  if(swReloading)return;swReloading=true;
-  /* loop guard: each new build reloads once; more than 3 takeovers inside a minute means something is wrong, so stop */
-  let hist=[];try{hist=JSON.parse(sessionStorage.getItem("nq_sw_reload")||"[]").filter(t=>typeof t==="number"&&Date.now()-t<60000)}catch(e){hist=[]}
-  if(hist.length>=3)return;
-  try{hist.push(Date.now());sessionStorage.setItem("nq_sw_reload",JSON.stringify(hist))}catch(e){}
-  save();location.reload()});
+  swGuardedReload()});
+ /* [G-02] §6.4: the SW posts RELOAD on activate; a tab on another build reloads through the same single-reload guard */
+ SWC.addEventListener("message",e=>{const d=e.data;if(d&&typeof d==="object"&&d.type==="RELOAD"&&typeof d.build==="string"&&d.build!==APP_BUILD&&swHadCtl)swGuardedReload()});
  window.addEventListener("load",()=>{SWC.register("./sw.js",{scope:"./",updateViaCache:"none"}).then(reg=>{swReg=reg;
    if(reg.waiting)applyUpdate();
    reg.addEventListener("updatefound",()=>{const w=reg.installing;if(w)w.addEventListener("statechange",()=>{if(w.state==="installed")applyUpdate()})});
@@ -276,6 +300,11 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPar
 /* ===== init ===== */
 S=load();
 const isNew=!!S._new;delete S._new;const fromKey=S.fromKey;delete S.fromKey;
+/* v3.1 §6.2: one-time toast after the v3 -> v3.1 migration (the corrupt-save toast wins; first-run v1/v2 upgrades show their own boot toast) */
+const mig31=S._mig31;delete S._mig31;
+/* [G-05] exact copy; shown once, only with the schedule on */
+if(mig31&&S.settings.work.on&&!pendingToast&&fromKey!=="v1"&&fromKey!=="v2"&&S.booted&&S.buddy)
+ pendingToast=mig31==="pending"?"V3.1 · WORK SCHEDULE ON · DAY RESET MOVES TO 12:00 AT NEXT RESET":mig31==="direct"?"RESET NOW 12 PM":"UPDATED TO v3.1 · WORK SCHEDULE ON (MON–FRI 4P–4A)";
 applySettings();
 rollover();
 save();
