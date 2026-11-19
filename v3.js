@@ -4,7 +4,9 @@ const ELP={FIRE:["dot","rise"],WATER:["ring","rise"],LIGHTNING:["line","burst"],
  TOXIC:["ring","rise"],SOUND:["note","burst"],STAR:["star","burst"],DEMON:["dot","rise"],HOLY:["star4","burst"],EARTH:["sq","fall"],WIND:["line","burst"]};
 const AURA=[0,3,5,7,10,12];
 const curId=()=>S.buddy&&S.buddy.id;
-const curL=()=>levelInfo(S.totalXp).L;
+const curL=()=>levelInfo(S.totalXp).L;   /* player level only (header, ranks, cut-in number) */
+/* v3.2 §8A: every buddy visual follows the buddy's OWN xp; never-picked buddies read as 0 xp without creating a bond entry */
+const bXp=id=>bXpOf(S,id),bLv=id=>levelInfo(bXp(id)).L;
 const elCol=id=>ELEM[BUDDIES[id].element];
 const later3=(tok,fn,ms)=>setTimeout(()=>{if(tok===ovTok)fn()},ms);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -85,7 +87,7 @@ function buddyReact(type,o={}){const id=curId();if(!id)return;const act=document
  else if(type==="tap"){anim(act,[{transform:"scale(1,1)"},{transform:"scale(1.1,.88)",offset:.25},{transform:"scale(.94,1.08) translateY(-8px)",offset:.6},{transform:"none"}],{duration:380});say(pickLine(id,"greet"))}}
 let lastTap=0;
 function renderPartner(){if(typeof tellPartner==="function")try{tellPartner()}catch(e){}const id=curId(),pc=$("pcard");if(!id){pc.classList.add("nobud");return}pc.classList.remove("nobud");
- const f=formIdx(curL()),b=BUDDIES[id],img=$("pImg"),u=spriteUrl(id,f);document.documentElement.style.setProperty("--el",elCol(id));
+ const f=formIdx(bLv(id)),b=BUDDIES[id],img=$("pImg"),u=spriteUrl(id,f);document.documentElement.style.setProperty("--el",elCol(id));
  if(img.getAttribute("src")!==u)img.src=u;img.alt=b.name+", "+b.forms[f];pc.style.setProperty("--aura",AURA[f]+"px");
  const part=$("partner");part.className="partner "+b.kind+" t"+(f<2?1:f<4?2:3);$("tFace").src=faceUrl(id);$("tFace").alt="";
  if(f<5)preload(spriteUrl(id,f+1));
@@ -109,12 +111,15 @@ let squashT=0;
 function idleSquash(){clearTimeout(squashT);squashT=setTimeout(()=>{if(curId()&&!document.hidden&&$("v-quests").classList.contains("on"))anim(document.querySelector("#pBud .bact"),[{transform:"none"},{transform:"scale(1.06,.93)",offset:.3},{transform:"scale(.97,1.03)",offset:.65},{transform:"none"}],{duration:600,easing:"ease-in-out"});idleSquash()},7000+Math.random()*3000)}
 
 /* ---------- BUDDY tab ---------- */
-function renderBuddy(){const id=curId();if(!id)return;const b=BUDDIES[id],L=curL(),f=formIdx(L),seen=S.seenForms[id]||[0],bd=bondOf(S,id);
+function renderBuddy(){const id=curId();if(!id)return;const b=BUDDIES[id],bd=bondOf(S,id),bi=levelInfo(bd.xp),L=bi.L,f=formIdx(L),seen=S.seenForms[id]||[0];
  const hero=$("bHero");hero.style.setProperty("--aura",AURA[f]+"px");const st=hero.querySelector(".stage");st.className="stage t"+(f<2?1:f<4?2:3)+" "+b.kind;
  const u=spriteUrl(id,f);if($("bImg").getAttribute("src")!==u)$("bImg").src=u;$("bImg").alt=b.name+", "+b.forms[f];
- $("bLvl").textContent="LV "+L;$("bName").textContent=b.name;$("bForm").textContent=b.forms[f]+" · FORM "+(f+1)+"/6";$("bElem").textContent=b.element;
- const nx=$("bNext");if(f<5){nx.hidden=false;const nl=FORM_LEVELS[f+1],to=total(nl)-S.totalXp,from=total(FORM_LEVELS[f]);$("bNextImg").src=spriteUrl(id,f+1);
-  $("bNextTxt").textContent="NEXT FORM AT LV "+nl+" · "+fmtN(Math.max(0,to))+" XP TO GO";$("bNextBar").style.width=Math.max(0,Math.min(100,(S.totalXp-from)/(total(nl)-from)*100))+"%"}
+ $("bLvl").textContent="LV "+L;
+ /* §8A.5 partner XP bar */
+ $("bLvTxt").textContent=L>=MAX_LEVEL?"PARTNER MAX LEVEL · "+fmtN(bd.xp)+" XP":"PARTNER LV "+L+" · "+fmtN(bi.into)+" / "+fmtN(bi.req)+" XP";$("bLvBar").style.width=barPct(bi)+"%";
+ $("bLvWrap").setAttribute("aria-valuenow",String(Math.round(barPct(bi))));$("bName").textContent=b.name;$("bForm").textContent=b.forms[f]+" · FORM "+(f+1)+"/6";$("bElem").textContent=b.element;
+ const nx=$("bNext");if(f<5){nx.hidden=false;const nl=FORM_LEVELS[f+1],to=total(nl)-bd.xp,from=total(FORM_LEVELS[f]);$("bNextImg").src=spriteUrl(id,f+1);
+  $("bNextTxt").textContent="NEXT FORM AT LV "+nl+" · "+fmtN(Math.max(0,to))+" XP TO GO";$("bNextBar").style.width=Math.max(0,Math.min(100,(bd.xp-from)/(total(nl)-from)*100))+"%"}
  else{nx.hidden=false;$("bNextImg").src=u;$("bNextTxt").textContent="FINAL FORM REACHED · 最終形態";$("bNextBar").style.width="100%"}
  const g=$("bGal");g.innerHTML="";const unlocked=i=>seen.includes(i)||i<=f;$("bFormCount").textContent=[0,1,2,3,4,5].filter(unlocked).length+"/6";
  b.forms.forEach((nm,i)=>{const c=document.createElement("button"),ok=unlocked(i);c.className="gcard"+(ok?"":" lock")+(i===f?" now":"")+(shimmer.has(id+":"+i)?" shim":"");
@@ -123,13 +128,13 @@ function renderBuddy(){const id=curId();if(!id)return;const b=BUDDIES[id],L=curL
   c.setAttribute("aria-label",ok?nm+", form "+(i+1)+", level "+FORM_LEVELS[i]:"Locked form, unlocks at level "+FORM_LEVELS[i]);c.disabled=!ok;if(ok)c.onclick=()=>openForm(id,i);g.append(c)});
  shimmer.clear();
  $("bBio").textContent=b.lore;const br=$("bBioRow");br.innerHTML="";[b.personality,"“"+b.quote+"”","ELEMENT · "+b.element,"FAVORITE · "+b.fav,b.kind==="creature"?"CREATURE":"SWORD LINE"].forEach(t=>{const s=document.createElement("span");s.textContent=t;br.append(s)});
- flick($("bdDays"),bd.days);flick($("bdMis"),bd.missions);flick($("bdFav"),bd.favMissions);flick($("bdEvo"),bd.evolutions)}
+ flick($("bdDays"),bd.days);flick($("bdMis"),bd.missions);flick($("bdFav"),bd.favMissions);flick($("bdEvo"),bd.evolutions);flick($("bdXp"),fmtN(bd.xp))}
 const shimmer=new Set();
 function openForm(id,i){const b=BUDDIES[id],m=$("formv");$("fvImg").src=spriteUrl(id,i);$("fvName").textContent=b.forms[i]+" · LV "+FORM_LEVELS[i];
  $("fvTxt").textContent=FORM_DESC[id]?FORM_DESC[id][i]:b.personality;$("fvReplay").hidden=i===0;
  $("fvClose").onclick=()=>{m.classList.remove("on");closeTrap()};m.onclick=e=>{if(e.target===m)$("fvClose").click()};
  $("fvReplay").onclick=()=>{m.classList.remove("on");closeTrap();playEvolution(id,i-1,i,{replay:true})};m.classList.add("on");openTrap(m,$("fvClose"))}
-$("chgBtn").onclick=async()=>{if(!await modal({title:"SWITCH PARTNER?",body:"Your level stays. Bond stats are kept for both.",ok:"SWITCH"}))return;openPicker("change")};
+$("chgBtn").onclick=async()=>{if(!await modal({title:"SWITCH PARTNER?",body:"Your level stays. Each partner keeps its own level and bond stats.",ok:"SWITCH"}))return;openPicker("change")};
 
 /* ---------- picker ---------- */
 let pkKind="all",pkEl=null,pkSel=null,pkMode="first";
@@ -141,38 +146,44 @@ function buildPickerFilters(){const el=$("pkEl");if(el.childElementCount)return;
   c.onclick=()=>{pkEl=pkEl===e?null:e;el.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===pkEl)));renderPicker()};el.append(c)});
  document.querySelectorAll("#pkKind .btn").forEach(b=>b.onclick=()=>{pkKind=b.dataset.k;document.querySelectorAll("#pkKind .btn").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderPicker()})}
 function renderPicker(){const g=$("pkGrid");g.innerHTML="";BUDDY_IDS.filter(id=>(pkKind==="all"||BUDDIES[id].kind===pkKind)&&(!pkEl||BUDDIES[id].element===pkEl)).forEach((id,n)=>{const b=BUDDIES[id],c=document.createElement("div");
-  c.className="pkc";c.dataset.id=id;c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",b.name+", "+b.element+" "+b.kind);c.style.setProperty("--c",ELEM[b.element]);
-  c.innerHTML='<div class="fa"><img alt="" loading="lazy" decoding="async" width="256" height="256"><span class="nm"></span><span class="elb"></span><span class="kd"></span></div><div class="fb"><b></b><div class="sil"></div><span class="ps"></span></div>';
-  c.querySelector(".fa img").src=thumbUrl(id);c.querySelector(".nm").textContent=b.name;c.querySelector(".elb").textContent=b.element;c.querySelector(".kd").textContent=b.kind==="creature"?"CREATURE":"SWORD";
+  const lv=bLv(id);c.className="pkc";c.dataset.id=id;c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",b.name+", "+b.element+" "+b.kind+", level "+lv);c.style.setProperty("--c",ELEM[b.element]);
+  c.innerHTML='<div class="fa"><img alt="" loading="lazy" decoding="async" width="256" height="256"><span class="nm"></span><span class="elb"></span><span class="lvb"></span><span class="kd"></span></div><div class="fb"><b></b><div class="sil"></div><span class="ps"></span></div>';
+  c.querySelector(".fa img").src=thumbUrl(id);c.querySelector(".nm").textContent=b.name;c.querySelector(".elb").textContent=b.element;c.querySelector(".lvb").textContent="LV "+lv;c.querySelector(".kd").textContent=b.kind==="creature"?"CREATURE":"SWORD";
   c.querySelector(".fb b").textContent=b.name;c.querySelector(".ps").textContent=b.personality;
   c.onclick=()=>selectPick(id,c);c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectPick(id,c)}};
   if(!RM())c.animate&&c.animate([{opacity:0,transform:"translate(-12px,12px)"},{opacity:1,transform:"none"}],{duration:300,delay:Math.min(n,12)*40,easing:"cubic-bezier(.2,1.4,.4,1)",fill:"backwards"});g.append(c)})}
 function selectPick(id,card){const b=BUDDIES[id];document.querySelectorAll(".pkc.flip").forEach(x=>{if(x!==card)x.classList.remove("flip")});
  if(card){const sil=card.querySelector(".sil");if(!sil.childElementCount)b.forms.forEach((_,i)=>{const im=document.createElement("img");im.alt="";im.loading="lazy";im.src=spriteUrl(id,i);limitArt(im,()=>sil.classList.add("lim"));sil.append(im)});card.classList.toggle("flip",pkSel!==id||!card.classList.contains("flip"))}
  pkSel=id;const sh=$("pkSheet");sh.style.setProperty("--c",ELEM[b.element]);$("shOff").hidden=true;$("shForms").classList.remove("lim");limitArt($("shImg"),()=>{if(pkSel===id){$("shOff").hidden=false;$("shForms").classList.add("lim");$("shImg").src=thumbUrl(id)}});$("shImg").src=spriteUrl(id,0);$("shName").textContent=b.name;$("shEl").textContent=b.element+" · "+(b.kind==="creature"?"CREATURE":"SWORD LINE");
- $("shPers").textContent=b.personality+" “"+b.quote+"”";$("shFav").textContent="FAVORITE CATEGORY: "+b.fav;const fs=$("shForms");fs.innerHTML="";b.forms.forEach((_,i)=>{const im=document.createElement("img");im.alt="";im.src=spriteUrl(id,i);fs.append(im)});
+ $("shPers").textContent=b.personality+" “"+b.quote+"”";$("shFav").textContent="FAVORITE CATEGORY: "+b.fav;$("shFocus").textContent="FOCUS · 2 OF 5 DAILY MISSIONS ARE "+b.fav;
+ /* §8A.6: the buddy's own level; forms above its current form are locked */
+ const lv=bLv(id),cf=formIdx(lv);$("shLv").textContent="LV "+lv+" · FORM "+(cf+1)+"/6"+(cf<5?" · NEXT AT LV "+FORM_LEVELS[cf+1]:"");
+ const fs=$("shForms");fs.innerHTML="";b.forms.forEach((_,i)=>{const w=document.createElement("span");w.className="shf"+(i>cf?" locked":"");const im=document.createElement("img");im.alt="";im.src=spriteUrl(id,i);w.append(im);if(i>cf){const k=document.createElement("i");k.className="lk";k.textContent="🔒";w.append(k)}fs.append(w)});
  sh.classList.add("on");buzz(8)}
 $("shX").onclick=()=>{$("pkSheet").classList.remove("on");document.querySelectorAll(".pkc.flip").forEach(x=>x.classList.remove("flip"))};
 $("pkRand").onclick=()=>{const cards=[...document.querySelectorAll(".pkc")];if(!cards.length)return;const pick=cards[Math.floor(Math.random()*cards.length)];
  if(RM()){selectPick(pick.dataset.id,pick);return}let n=0,steps=12;const tick=()=>{cards.forEach(c=>c.classList.remove("hl"));const c=n<steps?cards[Math.floor(Math.random()*cards.length)]:pick;c.classList.add("hl");
   if(n++<steps)setTimeout(tick,50+n*12);else{c.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>{c.classList.remove("hl");selectPick(c.dataset.id,c)},350)}};tick()};
-$("shGo").onclick=async()=>{const id=pkSel;if(!id)return;dropUndo(); /* changing partner is never undoable */const L=curL(),f=formIdx(L),prev=curId();
+$("shGo").onclick=async()=>{const id=pkSel;if(!id)return;dropUndo(); /* changing partner is never undoable */const f=formIdx(bLv(id)),prev=curId();
  S.buddy={id,chosenAt:Date.now()};bondOf(S,id);const seen=new Set(S.seenForms[id]||[]);for(let i=0;i<=f;i++)seen.add(i);S.seenForms[id]=[...seen].sort((a,b)=>a-b);save();
  closePicker();const rv=$("reveal");rv.querySelector("img").src=spriteUrl(id,f);document.documentElement.style.setProperty("--el",elCol(id));const bub=rv.querySelector(".rv-bub");bub.textContent=pickLine(id,"pick");
  switchTab("quests",true);renderAll();
  if(!RM()){rv.classList.add("on");speed("on fast");await impactFrame();anim(rv.querySelector("img"),[{transform:"translateY(40vh) scale(.4)",opacity:0},{transform:"translateY(-30px) scale(1.12)",opacity:1,offset:.55},{transform:"none",opacity:1}],{duration:650});
   burst(innerWidth/2,innerHeight/2,40,BUDDIES[id].element);await sleep(1500);speed(null);rv.classList.remove("on")}
  buzz([20,30,40]);setTimeout(()=>say(pickLine(id,"pick")),100);
- if(!prev&&S.v2Synced&&!S.syncToastShown){S.syncToastShown=true;save();setTimeout(()=>toast("PARTNER SYNCED TO LV "+L+" FORM"),RM()?200:900)}
- else if(prev&&prev!==id)toast("NEW PARTNER · "+BUDDIES[id].name)};
+ /* §3.4: the new focus applies from the next reset (today.fav was snapshotted at rollover) */
+ if(prev!==id){const fv=BUDDIES[id].fav,t=S.today&&S.today.fav===fv?"PARTNER SET":"PARTNER SET · FOCUS "+fv+" FROM NEXT RESET";setTimeout(()=>toast(t),RM()?200:prev?0:900)}};
 
 /* ---------- level-up cut-in (SPEC-v3 §5.2); replaces the v2 overlay timing, keeps its elements ---------- */
-function levelUp(oldL,newL,perfectAfter,evo){const tok=++ovTok,rk=rankIdx(newL)!==rankIdx(oldL),o=$("lvl"),rm=RM(),A=rm?"off":ANIM(),id=curId();
+/* v3.2d B-4: a newer cut-in supersedes an open one (ovTok), so the open one's queued evolutions and perfect banner carry over here and the partner is drawn from the SAVED state after the queue */
+let lvPend=[],lvPerf=false;
+function partnerSync(){renderPartner();if($("v-buddy").classList.contains("on"))renderBuddy()}
+function levelUp(oldL,newL,perfectAfter,evo,bForm){if(!$("lvl").classList.contains("on")){lvPend=[];lvPerf=false}lvPend.push(...(evo||[]));lvPerf=lvPerf||!!perfectAfter;const tok=++ovTok,rk=rankIdx(newL)!==rankIdx(oldL),o=$("lvl"),rm=RM(),A=rm?"off":ANIM(),id=curId();
  const T=$("lvT"),N=$("lvN"),R=$("lvR"),G=$("lvG"),Sb=$("lvS"),Bt=$("lvBtn"),rain=$("rain"),ci=$("cutin"),bub=$("lvBub");
  T.textContent="";N.textContent=oldL;N.classList.remove("pop");R.hidden=!rk;G.hidden=!rk;R.textContent="";Sb.textContent="";bub.textContent="";Bt.style.visibility=rk?"hidden":"visible";Bt.textContent=rk?"CONTINUE":"SKIP";rain.innerHTML="";
  o.setAttribute("aria-label",rk?"New rank unlocked":"Level up");o.classList.add("on");openTrap(o,Bt);const t0=performance.now();
  buzz([30,40,60]);rk?sRank():sArp();
- if(id){ci.querySelectorAll("img").forEach(i=>{i.src=spriteUrl(id,formIdx(oldL));if(i.decode)i.decode().catch(()=>{})});}  /* decode before the band slides in (perf) */
+ if(id){ci.querySelectorAll("img").forEach(i=>{i.src=spriteUrl(id,bForm!=null?bForm:formIdx(bLv(id)));if(i.decode)i.decode().catch(()=>{})});}  /* decode before the band slides in (perf) */
  const D=A==="full"?{band:260,out:1100,num:1100,sub:1900,close:2600}:A==="lite"?{band:0,out:450,num:450,sub:750,close:1200}:{band:-1,out:0,num:0,sub:0,close:2300};
  ci.className="cutin";
  if(D.band>=0&&id){o.classList.add("ci");if(A==="full"){later3(tok,()=>impactFrame(),200);later3(tok,()=>speed("on fast"),260)}
@@ -191,12 +202,13 @@ function levelUp(oldL,newL,perfectAfter,evo){const tok=++ovTok,rk=rankIdx(newL)!
   setTimeout(()=>{if(tok===ovTok){Bt.style.visibility="visible";Bt.focus()}},rm?300:D.num+1400)}
  else{announce("Level up. Level "+newL);setTimeout(()=>{if(tok===ovTok)close()},D.close)}
  async function close(){if(tok!==ovTok)return;ovTok++;o.classList.remove("on","shake","ci");ci.className="cutin";speed(null);closeTrap();rain.innerHTML="";renderRanks();
-  for(const e of (evo||[]))await playEvolution(e.id,e.from,e.to,{});
-  if(perfectAfter)setTimeout(perfectDay,150)}
+  const q=lvPend.splice(0),pf=lvPerf;lvPerf=false;
+  for(const e of q)if(e.id===curId()&&formIdx(bLv(e.id))>=e.to)await playEvolution(e.id,e.from,e.to,{});  /* skip scenes an undo took back */
+  partnerSync();if(pf)setTimeout(perfectDay,150)}
  ovClose=close;Bt.onclick=e=>{e.stopPropagation();close()};o.onclick=()=>{if(performance.now()-t0>600||rm)close()}}
 
 /* ---------- evolution (SPEC-v3 §5.3, §8) ---------- */
-function queueEvolutions(){const id=curId();if(!id)return[];const f=formIdx(curL()),seen=S.seenForms[id]||(S.seenForms[id]=[0]),mx=Math.max(...seen),out=[];
+function queueEvolutions(){const id=curId();if(!id)return[];const f=formIdx(bLv(id)),seen=S.seenForms[id]||(S.seenForms[id]=[0]),mx=Math.max(...seen),out=[];
  for(let k=mx+1;k<=f;k++){out.push({id,from:k-1,to:k});seen.push(k);bondOf(S,id).evolutions++;shimmer.add(id+":"+k)}return out}
 let evoBusy=null;
 function playEvolution(id,from,to,opt){const prev=evoBusy||Promise.resolve();evoBusy=prev.then(()=>runEvolution(id,from,to,opt||{}));return evoBusy}
@@ -268,7 +280,7 @@ function openingLine(){const id=curId();if(!id)return;const k=S.today&&S.today.d
    evolution or pending undo), and reload once on controllerchange (guarded so it can never loop). */
 const SWC="serviceWorker" in navigator&&/^https?:$/.test(location.protocol)?navigator.serviceWorker:null;
 let swReg=null,swHadCtl=!!(SWC&&SWC.controller),swReloading=false,toldPartner;
-const APP_BUILD="2026.11.16-v31b";   /* must equal BUILD in sw.js */
+const APP_BUILD="2026.11.19-v32e";   /* must equal BUILD in sw.js */
 const SW_RELOAD_MAX=2;
 function swGuardedReload(){if(swReloading)return;swReloading=true;
  /* loop guard (App Creator ruling): at most SW_RELOAD_MAX reloads inside a minute (controllerchange and RELOAD share it); a further request is suppressed */
@@ -297,11 +309,34 @@ if(SWC){
 function limitArt(img,onLimited){img.addEventListener("load",()=>{if(img.naturalWidth&&img.naturalWidth<512)onLimited()},{once:true})}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPartner();idleSquash()}});
 
+/* ---------- v3.2 upgrade (SPEC §4.3): one combined toast, at most one partner scene (last seen form straight to the new one) ---------- */
+function upgradeToast(m){const pid=curId();if(m.oldL===m.newL)return"UPDATED TO v3.2 · NEW MISSION XP AND LEVELS";
+ return"UPDATED TO v3.2 · LV "+m.oldL+" TO LV "+m.newL+(pid?" · "+BUDDIES[pid].name+" FORM "+(formIdx(bLv(pid))+1):"")}
+function shimmerAdd(fx){(fx||[]).forEach(k=>shimmer.add(k))}
+function upgradeEvo(m){if(!m.pid||m.pid!==curId()||!(m.f>m.oldF))return;setTimeout(()=>{if(curId()===m.pid)playEvolution(m.pid,m.oldF,m.f,{})},RM()?400:600)}
+
+/* v3.2c: the upgrade record (side key, 120 s). Shown by a tab only if it was open before (a reload, e.g. the SW update), the save is the migrated one,
+   and this tab hasn't shown it (sessionStorage). Fresh installs and later reloads never see it. */
+const UPK="neonquest_v32up",UP_MS=120000;
+function whenShown(fn){if(document.hidden){const vis=()=>{if(document.hidden)return;document.removeEventListener("visibilitychange",vis);fn()};document.addEventListener("visibilitychange",vis)}else fn()}
+/* v3.2e B3-04: the record never lingers past its lifetime. Unparsable, not an object, non-finite at, expired (age > UP_MS) or
+   future-dated beyond UP_MS (age < -UP_MS): the key is removed. Read on every load path that can see it. */
+function upLive(){try{const v=localStorage.getItem(UPK);if(v==null)return null;let r=null;try{r=JSON.parse(v)}catch(_){}
+  const age=isObj(r)&&Number.isFinite(r.at)?Date.now()-r.at:NaN;if(!(age<=UP_MS&&age>=-UP_MS)){try{localStorage.removeItem(UPK)}catch(_){}return null}return r}catch(_){return null}}
+function upRec(){try{const nav=performance.getEntriesByType("navigation")[0];
+  const r=upLive(),m=r&&r.m,age=r?Date.now()-r.at:-1;
+  if(!isObj(r)||!Number.isFinite(r.at)||age<0||age>UP_MS||!isObj(m)||sessionStorage.getItem(UPK)===String(r.at))return null;
+  if(!nav||nav.type!=="reload"){sessionStorage.setItem(UPK,String(r.at));return null} /* a tab opened after the upgrade never shows it, not even on its own reload */
+  if(![m.oldL,m.newL,m.f].every(Number.isInteger)||(m.oldF!==null&&!Number.isInteger(m.oldF))||!Array.isArray(m.fx)||!m.fx.every(x=>typeof x==="string"))return null;
+  if((m.pid||null)!==(curId()||null)||levelInfo(S.totalXp).L!==m.newL)return null;return r}catch(_){return null}}
 /* ===== init ===== */
 S=load();
 const isNew=!!S._new;delete S._new;const fromKey=S.fromKey;delete S.fromKey;
 /* v3.1 §6.2: one-time toast after the v3 -> v3.1 migration (the corrupt-save toast wins; first-run v1/v2 upgrades show their own boot toast) */
-const mig31=S._mig31;delete S._mig31;
+const mig31=S._mig31;delete S._mig31;const mig32=S._mig32;delete S._mig32;
+/* v3.2c (two tabs, App Creator): record the upgrade BEFORE the migrated save is written, so another open tab that reloads onto it shows it once too */
+const up32=mig32&&S.booted&&fromKey!=="v1"&&fromKey!=="v2"&&!(pendingToast&&/^SAVE CORRUPTED/.test(pendingToast));
+if(up32)try{const r={at:Date.now(),m:mig32};localStorage.setItem(UPK,JSON.stringify(r));sessionStorage.setItem(UPK,String(r.at))}catch(_){}
 /* [G-05] exact copy; shown once, only with the schedule on */
 if(mig31&&S.settings.work.on&&!pendingToast&&fromKey!=="v1"&&fromKey!=="v2"&&S.booted&&S.buddy)
  pendingToast=mig31==="pending"?"V3.1 · WORK SCHEDULE ON · DAY RESET MOVES TO 12:00 AT NEXT RESET":mig31==="direct"?"RESET NOW 12 PM":"UPDATED TO v3.1 · WORK SCHEDULE ON (MON–FRI 4P–4A)";
@@ -314,4 +349,11 @@ if(isNew||!S.booted)boot(S.migratedFrom==="v1"&&!S.booted?"v1":"new");
 else if(!S.buddy){if(fromKey==="v2")boot("v2");else openPicker("first")}
 else openingLine();
 if(pendingToast)setTimeout(()=>toast(pendingToast),400);
+/* v3.2: queued after any v3.1 migration toast; first-run v1/v2 upgrades show their boot screen instead */
+if(up32){shimmerAdd(mig32.fx);const at=pendingToast?2900:400;
+ /* a tab that upgrades while hidden (e.g. reloaded in the background by the SW update) keeps the toast + scene until it is shown, so D-7's 400-1200 ms gap holds */
+ const go=()=>setTimeout(()=>{toast(upgradeToast(mig32));upgradeEvo(mig32)},at);
+ whenShown(go)}
+else if(S.booted&&fromKey!=="v1"&&fromKey!=="v2"&&!pendingToast){const r=upRec();if(r){try{sessionStorage.setItem(UPK,String(r.at))}catch(_){}shimmerAdd(r.m.fx);whenShown(()=>setTimeout(()=>{toast(upgradeToast(r.m));upgradeEvo(r.m)},400))}}
+else upLive();  /* v3.2e B3-04: other load paths still drop a dead record */
 window.NQ={get S(){return S},levelInfo,need,total,dailySet,importText,formIdx,BUDDIES,openPicker,playEvolution,queueEvolutions,switchTab};

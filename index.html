@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NEON//QUEST">
-<meta name="description" content="Anime cyberpunk daily self-upgrade quests with an evolving buddy. 10 XP per mission, levels 1 to 100.">
+<meta name="description" content="Anime cyberpunk daily self-upgrade quests with an evolving buddy. Easy, normal and hard missions, levels 1 to 100.">
 <title>NEON//QUEST</title>
 <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
@@ -59,6 +59,7 @@
    <h2><span class="rib"><span id="mTitle">TODAY'S MISSIONS</span></span><i class="kt" aria-hidden="true">本日の任務</i><span class="mhead"><small id="mCount">0/5</small>
     <svg class="ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="rb" cx="18" cy="18" r="15"/><circle class="rf" id="mRing" cx="18" cy="18" r="15" stroke-dasharray="94.25" stroke-dashoffset="94.25"/></svg></span></h2>
    <div class="cd">RESET IN <b id="cd">--:--:--</b></div>
+   <div class="dim fnote" id="focusNote" hidden></div>
    <div class="list" id="mList"></div>
    <button class="btn wide" id="extraBtn">+ EXTRA MISSION</button>
    <div class="dim" id="swapNote" hidden></div>
@@ -70,6 +71,7 @@
     <input id="sjName" maxlength="60" placeholder="Add a daily side job..." aria-label="Side job name" enterkeyhint="done">
     <select id="sjCat" aria-label="Category"><option>BODY</option><option>MIND</option><option>SKILL</option><option selected>LIFE</option><option>SOCIAL</option></select>
     <button class="btn" type="submit">+ ADD</button>
+    <div class="seg sjd-seg" id="sjDiff" role="group" aria-label="Side job difficulty"><button type="button" class="btn" data-d="E" aria-pressed="false">EASY</button><button type="button" class="btn" data-d="N" aria-pressed="true">NORMAL</button><button type="button" class="btn" data-d="H" aria-pressed="false">HARD</button></div>
    </form>
    <div class="list" id="sjList"></div>
    <div class="dim">Side jobs repeat daily. The first 3 you complete each day earn XP; the rest are tracked at +0. Swipe left or tap <svg class="ic" aria-hidden="true" focusable="false"><desc>✕</desc><use href="assets/icons.svg#i-close"/></svg> to delete.</div>
@@ -107,13 +109,14 @@
    <h2><span class="rib">BUDDY</span><i class="kt" aria-hidden="true">相棒</i> <small id="bLvl">LV 1</small></h2>
    <div class="stage"><div class="rays" aria-hidden="true"></div><span class="plat big" aria-hidden="true"><i></i></span><span class="bob"><img id="bImg" alt="" width="512" height="512" decoding="async"></span></div>
    <div class="bname"><b id="bName">—</b><span id="bForm">—</span><span class="elb" id="bElem">—</span></div>
+   <div class="bar blv" role="progressbar" aria-label="Partner XP to next level" aria-valuemin="0" aria-valuemax="100" id="bLvWrap"><div class="fill" id="bLvBar"></div><div class="bartxt" id="bLvTxt"></div></div>
    <div class="nextf" id="bNext"><img id="bNextImg" alt="" width="512" height="512" decoding="async"><div><div id="bNextTxt"></div><div class="bar"><div class="fill" id="bNextBar"></div></div></div></div>
   </div>
   <div class="panel"><h2><span class="rib">FORMS</span><i class="kt" aria-hidden="true">形態</i> <small id="bFormCount">1/6</small></h2><div class="gal" id="bGal"></div></div>
   <div class="panel"><h2><span class="rib">BIO</span></h2><p class="bio" id="bBio"></p><div class="biorow" id="bBioRow"></div></div>
   <div class="panel"><h2><span class="rib">BOND</span></h2><div class="tiles bondt" style="margin-top:0">
    <div><b id="bdDays">0</b><span>DAYS TOGETHER</span></div><div><b id="bdMis">0</b><span>MISSIONS</span></div>
-   <div><b id="bdFav">0</b><span>FAVORITE CATEGORY</span></div><div><b id="bdEvo">0</b><span>EVOLUTIONS</span></div></div></div>
+   <div><b id="bdFav">0</b><span>FAVORITE CATEGORY</span></div><div><b id="bdEvo">0</b><span>EVOLUTIONS</span></div><div class="bdx"><b id="bdXp">0</b><span>PARTNER XP</span></div></div></div>
   <button class="btn wide ghost" id="chgBtn">CHANGE PARTNER</button>
  </section>
 
@@ -170,12 +173,10 @@
   </div>
   <div class="panel explain">
    <h2>HOW XP WORKS</h2>
-   <p>Every completed mission is worth <b>10 XP</b>. No multipliers, no bonuses.</p>
-   <p>Level 1 to 2 needs <b>100 XP</b>. Each level after that needs <b>10 XP more</b> than the last (level 2 to 3 needs 110; level 99 to 100 needs 1,080).</p>
-   <p>Reaching level 100 takes <b>58,410 XP</b> in total. Each day you get 5 missions, up to 3 extra missions, and up to 3 XP-earning side jobs. Missing a day only resets your streak, never your XP.</p>
+   <div id="xpHelp"></div>
   </div>
   <div class="panel" id="instPanel" hidden><h2><span class="rib">INSTALL</span></h2><button class="btn wide" id="instBtn">INSTALL APP</button><div class="dim" style="margin-top:8px">Adds NEON//QUEST to your home screen. Works offline.</div></div>
-  <div class="ver">NEON//QUEST v3.1 · saves in this browser only</div>
+  <div class="ver">NEON//QUEST v3.2 · saves in this browser only</div>
  </section>
 </main>
 
@@ -207,7 +208,7 @@
  </div>
  <div class="sheet" id="pkSheet" role="dialog" aria-modal="true" aria-label="Buddy preview">
   <button class="sh-x" id="shX" aria-label="Close preview"><svg class="ic" aria-hidden="true" focusable="false"><desc>✕</desc><use href="assets/icons.svg#i-close"/></svg></button>
-  <div class="sh-top"><img id="shImg" alt="" width="512" height="512"><span class="offtag" id="shOff" hidden>OFFLINE · PREVIEW LIMITED</span><div><b id="shName"></b><span class="elb" id="shEl"></span><p id="shPers"></p><p class="dim" id="shFav"></p></div></div>
+  <div class="sh-top"><img id="shImg" alt="" width="512" height="512"><span class="offtag" id="shOff" hidden>OFFLINE · PREVIEW LIMITED</span><div><b id="shName"></b><span class="elb" id="shEl"></span><p id="shPers"></p><p class="dim" id="shFav"></p><p class="dim" id="shFocus"></p><p class="dim" id="shLv"></p></div></div>
   <div class="sh-forms" id="shForms"></div>
   <button class="btn wide hot" id="shGo">PARTNER UP</button>
  </div>
@@ -224,7 +225,7 @@
 <div class="wipe" id="wipe" aria-hidden="true"></div>
 <canvas id="fxc" aria-hidden="true"></canvas>
 
-<div class="snack" id="snack" role="status"><span id="snackTxt">+10 XP</span><button class="btn" id="undoBtn">UNDO</button><i class="tm"></i></div>
+<div class="snack" id="snack" role="status"><span id="snackTxt">+75 XP</span><button class="btn" id="undoBtn">UNDO</button><i class="tm"></i></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="banner" id="banner" aria-hidden="true"><span>PERFECT DAY</span><i>完了</i></div>
 <div class="sr" aria-live="polite" id="live"></div>

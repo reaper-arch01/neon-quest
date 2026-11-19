@@ -553,3 +553,22 @@ main.wrap{padding-bottom:calc(var(--tab) + 84px + env(safe-area-inset-bottom))}
  .acts .rr{order:-1}
  .acts .ct.gone,.acts .rr:disabled{display:none}
 }
+/* ===== v3.2 (SPEC-v3.2 §2, §3.5, §6, §8A.5, §8A.6) ===== */
+.xpb{box-sizing:content-box;min-width:8ch;text-align:center;display:inline-block;flex-shrink:0}
+.xpb.tE{color:#bfefff;border-color:rgba(191,239,255,.5)}
+.xpb.tN{color:var(--yellow);border-color:rgba(248,255,58,.4)}
+.xpb.tH{color:#ff2bd6;border-color:#ff2bd6;box-shadow:0 0 6px #ff2bd6aa}
+.xpb.zero{color:var(--dim);border-color:var(--line);box-shadow:none}
+.sjd{flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 8px 0 0;margin-left:-2px;background:none;border:0;cursor:pointer}
+.sjd:hover .xpb{background:#15112a}
+.fnote{margin:-6px 0 12px;font-size:11px;letter-spacing:1px}
+.addf .sjd-seg{flex:1 1 100%;margin:0}.addf .sjd-seg .btn{min-height:44px}
+.bar.blv{margin-top:10px;border-color:var(--el,var(--cyan))}
+.bar.blv .fill{background:var(--el,var(--cyan));box-shadow:0 0 10px var(--el,var(--cyan))}
+.tiles.bondt .bdx{grid-column:1/-1}
+.pkc .lvb{position:absolute;right:8px;top:7px;display:inline-block;padding:1px 6px;font:800 10px var(--disp);letter-spacing:1px;color:var(--ink);background:var(--c);transform:skewX(-12deg);border:1px solid var(--ink);white-space:nowrap}
+.sh-forms .shf{position:relative;display:block;min-width:0}
+.sh-forms .shf img{display:block}
+.sh-forms .shf.locked img{opacity:.35;filter:grayscale(1) brightness(0) drop-shadow(0 0 1.5px var(--c))}
+.sh-forms .shf .lk{position:absolute;right:0;bottom:0;font-size:11px;font-style:normal;line-height:1}
+@media (max-width:420px){.xpb{box-sizing:border-box;padding:2px 1px;margin-left:calc(10px - 2ch)}} /* §6 + v3.1 D-6: at <= 420 px the 8ch chip is the whole box (border included) and sits 2ch-10px closer, so chip + gap = v3.1's 6ch + 20px exactly: titles keep the n12/v3.1 width and line counts */

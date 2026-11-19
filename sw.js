@@ -1,4 +1,4 @@
-/* NEON//QUEST v3 / v3.1 service worker.
+/* NEON//QUEST v3 / v3.1 / v3.2 service worker.
    - Versioned, atomic: every build precaches its whole shell into its own cache (nq-<BUILD>) with
      cache:'reload' requests, so GitHub Pages' 10-minute HTTP cache can never leak old files into a new build.
    - Cache-first from THIS build's cache only, so a page never gets a mix of old and new files.
@@ -7,7 +7,7 @@
    - Updates: the new worker waits until the page says it's idle (message "SKIP_WAITING"), then takes over;
      the page reloads once on controllerchange. A first install (no page controlled yet) activates at once.
    All URLs are relative to this file, so it works under /neon-quest/. */
-const BUILD="2026.11.16-v31b";
+const BUILD="2026.11.19-v32e";
 const VERSION="nq-"+BUILD;
 const IDS=["pyrobyte","jellix","ohmlet","nullmoth","cryoslug","mossybara","chromadillo","toxeko","ampcrab","nebuluga",
  "akumaru","seraphine","gantetsu","kazekiri","renka","shimo","namiko","kagerou","raika","tekko"];
