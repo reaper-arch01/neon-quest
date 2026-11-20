@@ -1,4 +1,4 @@
-/* NEON//QUEST v3 / v3.1 / v3.2 service worker.
+/* NEON//QUEST v3 / v3.1 / v3.2 / v3.3 service worker.
    - Versioned, atomic: every build precaches its whole shell into its own cache (nq-<BUILD>) with
      cache:'reload' requests, so GitHub Pages' 10-minute HTTP cache can never leak old files into a new build.
    - Cache-first from THIS build's cache only, so a page never gets a mix of old and new files.
@@ -7,7 +7,7 @@
    - Updates: the new worker waits until the page says it's idle (message "SKIP_WAITING"), then takes over;
      the page reloads once on controllerchange. A first install (no page controlled yet) activates at once.
    All URLs are relative to this file, so it works under /neon-quest/. */
-const BUILD="2026.11.19-v32e";
+const BUILD="2026.11.19-v33c";
 const VERSION="nq-"+BUILD;
 const IDS=["pyrobyte","jellix","ohmlet","nullmoth","cryoslug","mossybara","chromadillo","toxeko","ampcrab","nebuluga",
  "akumaru","seraphine","gantetsu","kazekiri","renka","shimo","namiko","kagerou","raika","tekko"];
@@ -47,7 +47,8 @@ async function respond(req){const cache=await caches.open(VERSION);const url=new
  if(req.mode==="navigate"){const hit=await cache.match(abs("index.html"));if(hit)return hit;try{return await fetch(req)}catch(e){return new Response("<h1>Offline</h1>",{status:503,headers:{"content-type":"text/html"}})}}
  const hit=await cache.match(req,{ignoreSearch:true});if(hit)return hit;
  const m=url.pathname.match(SPRITE);
- try{const res=await fetch(req);
+ /* v3.3 (SPEC-v3.3 §6): sprites past the browser HTTP cache (GitHub Pages max-age 600 s), so old art can never show after an update */
+ try{const res=await (m?fetch(req,{cache:"no-cache"}):fetch(req));
   if(m&&res.ok&&m[1]===(await getPartner()))cache.put(req,res.clone()).catch(()=>{});  /* partner art only */
   if(!res.ok&&m){const th=await cache.match(abs("assets/buddies/"+m[1]+"/thumb.webp"));if(th)return th}
   return res}

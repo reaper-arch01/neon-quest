@@ -259,8 +259,6 @@ body{overscroll-behavior-y:none;touch-action:manipulation}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .creature .bob{animation-name:hover}
 @keyframes hover{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-1deg)}70%{transform:translateY(-2px) rotate(1deg)}}
-.swordsman .bob{animation-name:shift}
-@keyframes shift{0%,100%{transform:translate(0,0) rotate(0)}25%{transform:translate(1px,-3px) rotate(.6deg)}75%{transform:translate(-1px,-2px) rotate(-.6deg)}}
 .drowsy .bob{animation-duration:5.5s;opacity:.85}
 .zz{position:absolute;right:10px;top:4px;font:800 14px var(--disp);color:var(--cyan);opacity:0;pointer-events:none}
 .drowsy .zz{animation:zz 2.6s ease-in-out infinite}
@@ -336,7 +334,7 @@ body{overscroll-behavior-y:none;touch-action:manipulation}
 .pk-in{width:100%;max-width:980px;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(14px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom));text-align:left;overscroll-behavior:contain}
 .pk-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pk-head h2{font:800 15px var(--disp);display:flex;align-items:center;flex-wrap:wrap}
-.pk-f{display:flex;gap:6px;align-items:center;margin-top:10px}.pk-f .seg{flex:1;margin:0}.pk-f .seg .btn{font-size:10px;letter-spacing:1px}
+.pk-f{display:flex;gap:6px;align-items:center;margin-top:10px}
 .pk-el{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
 .pk-el::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;min-height:34px;padding:0 10px;font:800 10px var(--disp);letter-spacing:1px;border:1px solid var(--c);color:var(--c);transform:skewX(-12deg)}
@@ -351,7 +349,6 @@ body{overscroll-behavior-y:none;touch-action:manipulation}
 .pkc:active .fa img{transform:scale(.95)}
 .pkc .nm{position:absolute;left:8px;right:8px;bottom:26px;font:800 13px var(--disp);letter-spacing:1px;color:#fff;text-shadow:0 0 8px var(--c)}
 .pkc .elb{position:absolute;left:8px;bottom:7px;background:var(--c)}
-.pkc .kd{position:absolute;right:8px;bottom:8px;font-size:9px;color:var(--dim2);letter-spacing:1px}
 .pkc.hl .fa{outline:3px solid #fff;box-shadow:0 0 22px var(--c)}
 .pkc .sil{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .pkc .sil img,.sh-forms img{width:100%;aspect-ratio:1;object-fit:contain;filter:brightness(0) drop-shadow(0 0 1.5px var(--c))}
@@ -476,14 +473,12 @@ h1.wm{margin:0;line-height:normal} /* V3-21: page heading */
 /* Item 9 / V3-06: every control at least 44x44 */
 .btn{min-width:44px}.snack .btn{min-height:44px}
 .chip{min-height:44px;min-width:44px}
-/* V3-07 (SPEC §2.2): the kind row wraps, RANDOM drops to its own row on narrow screens, no hidden scroll */
-.pk-f{flex-wrap:wrap;gap:8px}.pk-f .seg{flex:1 1 280px;min-width:0}.pk-f #pkRand{flex:1 0 auto}
-.pk-f .seg .btn{min-width:44px}
-/* V3-16 (SPEC §2.2): picker card stacks name / element badge / kind, never on one line, never truncated */
+/* v3.3 (SPEC-v3.3 §4): no kind filter; RANDOM is the whole row, 44 px tall */
+.pk-f #pkRand{flex:1;min-height:44px;height:44px}
+/* V3-16 (SPEC §2.2): picker card stacks name / element badge, never on one line, never truncated (v3.3: no kind tag) */
 .pkc .fa img{height:62%;top:3%}
 .pkc .nm{bottom:52px;line-height:1.15}
 .pkc .elb{left:10px;bottom:28px;white-space:nowrap;max-width:none}
-.pkc .kd{left:8px;right:auto;bottom:8px;font:9px var(--mono);letter-spacing:1px;color:var(--dim2);white-space:nowrap}
 /* V3-18: solid toast on top of everything, balanced lines; solid picker header */
 .toast{background:#100d1f;z-index:190;max-width:calc(100% - 32px);text-wrap:balance;width:max-content}
 .picker{background:var(--bg)}.pk-head{background:var(--bg)}

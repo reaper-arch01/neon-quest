@@ -13,7 +13,7 @@ The fonts are self-hosted. Orbitron and Dela Gothic One have been modified (conv
 
 ## Buddy art
 The buddy sprites in `assets/buddies/` are original designs made for this project from the project's own concept sheets (`design/v3-art/concept/`). They were generated with AI image tools, background-keyed with the project's own `tools/clean_sprite.py` (numpy, scipy and Pillow; BSD/HPND licenses) and saved as WebP. They are not based on any existing franchise.
-Gantetsu uses only the current concept sheet (iron bar → notched cleaver → stone blade).
+v3.3: ONIKIT, LUMILAMB, TERRATORT, ZEPHERRET, CINDERWREN, RIMEFOX, TIDOTTER, UMBRAVEN, JOLTAROO and MANTIBOT (folders akumaru … tekko) are original creature designs made for this project the same way, each from its own 6-form concept sheet (`design/art-v3.3/<id>/sheet.jpg`).
 
 ## Icons
 `assets/icons/*` were drawn with Pillow for this project.

@@ -127,7 +127,7 @@ function renderBuddy(){const id=curId();if(!id)return;const b=BUDDIES[id],bd=bon
   c.querySelector("b").textContent=ok?nm:"???";c.querySelector("small").textContent="LV "+FORM_LEVELS[i];
   c.setAttribute("aria-label",ok?nm+", form "+(i+1)+", level "+FORM_LEVELS[i]:"Locked form, unlocks at level "+FORM_LEVELS[i]);c.disabled=!ok;if(ok)c.onclick=()=>openForm(id,i);g.append(c)});
  shimmer.clear();
- $("bBio").textContent=b.lore;const br=$("bBioRow");br.innerHTML="";[b.personality,"“"+b.quote+"”","ELEMENT · "+b.element,"FAVORITE · "+b.fav,b.kind==="creature"?"CREATURE":"SWORD LINE"].forEach(t=>{const s=document.createElement("span");s.textContent=t;br.append(s)});
+ $("bBio").textContent=b.lore;const br=$("bBioRow");br.innerHTML="";[b.personality,"“"+b.quote+"”","ELEMENT · "+b.element,"FAVORITE · "+b.fav].forEach(t=>{const s=document.createElement("span");s.textContent=t;br.append(s)});
  flick($("bdDays"),bd.days);flick($("bdMis"),bd.missions);flick($("bdFav"),bd.favMissions);flick($("bdEvo"),bd.evolutions);flick($("bdXp"),fmtN(bd.xp))}
 const shimmer=new Set();
 function openForm(id,i){const b=BUDDIES[id],m=$("formv");$("fvImg").src=spriteUrl(id,i);$("fvName").textContent=b.forms[i]+" · LV "+FORM_LEVELS[i];
@@ -137,24 +137,23 @@ function openForm(id,i){const b=BUDDIES[id],m=$("formv");$("fvImg").src=spriteUr
 $("chgBtn").onclick=async()=>{if(!await modal({title:"SWITCH PARTNER?",body:"Your level stays. Each partner keeps its own level and bond stats.",ok:"SWITCH"}))return;openPicker("change")};
 
 /* ---------- picker ---------- */
-let pkKind="all",pkEl=null,pkSel=null,pkMode="first";
+let pkEl=null,pkSel=null,pkMode="first";
 function openPicker(mode){pkMode=mode||"first";holdToast();const p=$("picker");$("pkClose").hidden=pkMode!=="change";buildPickerFilters();renderPicker();p.classList.add("on");openTrap(p,p.querySelector(".pkc"));
  speed("on");setTimeout(()=>speed(null),700);p.querySelector(".pk-in").scrollTop=0}
 function closePicker(){$("picker").classList.remove("on");$("pkSheet").classList.remove("on");closeTrap();pkSel=null}
 $("pkClose").onclick=closePicker;
 function buildPickerFilters(){const el=$("pkEl");if(el.childElementCount)return;Object.keys(ELEM).filter(e=>BUDDY_IDS.some(id=>BUDDIES[id].element===e)).forEach(e=>{const c=document.createElement("button");c.className="chip";c.style.setProperty("--c",ELEM[e]);c.textContent=e;c.setAttribute("aria-pressed","false");
-  c.onclick=()=>{pkEl=pkEl===e?null:e;el.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===pkEl)));renderPicker()};el.append(c)});
- document.querySelectorAll("#pkKind .btn").forEach(b=>b.onclick=()=>{pkKind=b.dataset.k;document.querySelectorAll("#pkKind .btn").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));renderPicker()})}
-function renderPicker(){const g=$("pkGrid");g.innerHTML="";BUDDY_IDS.filter(id=>(pkKind==="all"||BUDDIES[id].kind===pkKind)&&(!pkEl||BUDDIES[id].element===pkEl)).forEach((id,n)=>{const b=BUDDIES[id],c=document.createElement("div");
-  const lv=bLv(id);c.className="pkc";c.dataset.id=id;c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",b.name+", "+b.element+" "+b.kind+", level "+lv);c.style.setProperty("--c",ELEM[b.element]);
-  c.innerHTML='<div class="fa"><img alt="" loading="lazy" decoding="async" width="256" height="256"><span class="nm"></span><span class="elb"></span><span class="lvb"></span><span class="kd"></span></div><div class="fb"><b></b><div class="sil"></div><span class="ps"></span></div>';
-  c.querySelector(".fa img").src=thumbUrl(id);c.querySelector(".nm").textContent=b.name;c.querySelector(".elb").textContent=b.element;c.querySelector(".lvb").textContent="LV "+lv;c.querySelector(".kd").textContent=b.kind==="creature"?"CREATURE":"SWORD";
+  c.onclick=()=>{pkEl=pkEl===e?null:e;el.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===pkEl)));renderPicker()};el.append(c)});}
+function renderPicker(){const g=$("pkGrid");g.innerHTML="";BUDDY_IDS.filter(id=>!pkEl||BUDDIES[id].element===pkEl).forEach((id,n)=>{const b=BUDDIES[id],c=document.createElement("div");
+  const lv=bLv(id);c.className="pkc";c.dataset.id=id;c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",b.name+", "+b.element+", level "+lv);c.style.setProperty("--c",ELEM[b.element]);
+  c.innerHTML='<div class="fa"><img alt="" loading="lazy" decoding="async" width="256" height="256"><span class="nm"></span><span class="elb"></span><span class="lvb"></span></div><div class="fb"><b></b><div class="sil"></div><span class="ps"></span></div>';
+  c.querySelector(".fa img").src=thumbUrl(id);c.querySelector(".nm").textContent=b.name;c.querySelector(".elb").textContent=b.element;c.querySelector(".lvb").textContent="LV "+lv;
   c.querySelector(".fb b").textContent=b.name;c.querySelector(".ps").textContent=b.personality;
   c.onclick=()=>selectPick(id,c);c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectPick(id,c)}};
   if(!RM())c.animate&&c.animate([{opacity:0,transform:"translate(-12px,12px)"},{opacity:1,transform:"none"}],{duration:300,delay:Math.min(n,12)*40,easing:"cubic-bezier(.2,1.4,.4,1)",fill:"backwards"});g.append(c)})}
 function selectPick(id,card){const b=BUDDIES[id];document.querySelectorAll(".pkc.flip").forEach(x=>{if(x!==card)x.classList.remove("flip")});
  if(card){const sil=card.querySelector(".sil");if(!sil.childElementCount)b.forms.forEach((_,i)=>{const im=document.createElement("img");im.alt="";im.loading="lazy";im.src=spriteUrl(id,i);limitArt(im,()=>sil.classList.add("lim"));sil.append(im)});card.classList.toggle("flip",pkSel!==id||!card.classList.contains("flip"))}
- pkSel=id;const sh=$("pkSheet");sh.style.setProperty("--c",ELEM[b.element]);$("shOff").hidden=true;$("shForms").classList.remove("lim");limitArt($("shImg"),()=>{if(pkSel===id){$("shOff").hidden=false;$("shForms").classList.add("lim");$("shImg").src=thumbUrl(id)}});$("shImg").src=spriteUrl(id,0);$("shName").textContent=b.name;$("shEl").textContent=b.element+" · "+(b.kind==="creature"?"CREATURE":"SWORD LINE");
+ pkSel=id;const sh=$("pkSheet");sh.style.setProperty("--c",ELEM[b.element]);$("shOff").hidden=true;$("shForms").classList.remove("lim");limitArt($("shImg"),()=>{if(pkSel===id){$("shOff").hidden=false;$("shForms").classList.add("lim");$("shImg").src=thumbUrl(id)}});$("shImg").src=spriteUrl(id,0);$("shName").textContent=b.name;$("shEl").textContent=b.element+" · CREATURE";
  $("shPers").textContent=b.personality+" “"+b.quote+"”";$("shFav").textContent="FAVORITE CATEGORY: "+b.fav;$("shFocus").textContent="FOCUS · 2 OF 5 DAILY MISSIONS ARE "+b.fav;
  /* §8A.6: the buddy's own level; forms above its current form are locked */
  const lv=bLv(id),cf=formIdx(lv);$("shLv").textContent="LV "+lv+" · FORM "+(cf+1)+"/6"+(cf<5?" · NEXT AT LV "+FORM_LEVELS[cf+1]:"");
@@ -280,7 +279,7 @@ function openingLine(){const id=curId();if(!id)return;const k=S.today&&S.today.d
    evolution or pending undo), and reload once on controllerchange (guarded so it can never loop). */
 const SWC="serviceWorker" in navigator&&/^https?:$/.test(location.protocol)?navigator.serviceWorker:null;
 let swReg=null,swHadCtl=!!(SWC&&SWC.controller),swReloading=false,toldPartner;
-const APP_BUILD="2026.11.19-v32e";   /* must equal BUILD in sw.js */
+const APP_BUILD="2026.11.19-v33c";   /* must equal BUILD in sw.js */
 const SW_RELOAD_MAX=2;
 function swGuardedReload(){if(swReloading)return;swReloading=true;
  /* loop guard (App Creator ruling): at most SW_RELOAD_MAX reloads inside a minute (controllerchange and RELOAD share it); a further request is suppressed */
@@ -310,14 +309,14 @@ function limitArt(img,onLimited){img.addEventListener("load",()=>{if(img.natural
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPartner();idleSquash()}});
 
 /* ---------- v3.2 upgrade (SPEC §4.3): one combined toast, at most one partner scene (last seen form straight to the new one) ---------- */
-function upgradeToast(m){const pid=curId();if(m.oldL===m.newL)return"UPDATED TO v3.2 · NEW MISSION XP AND LEVELS";
- return"UPDATED TO v3.2 · LV "+m.oldL+" TO LV "+m.newL+(pid?" · "+BUDDIES[pid].name+" FORM "+(formIdx(bLv(pid))+1):"")}
+function upgradeToast(m){const pid=curId();if(m.oldL===m.newL)return"UPDATED TO v3.3 · NEW MISSION XP AND LEVELS";
+ return"UPDATED TO v3.3 · LV "+m.oldL+" TO LV "+m.newL+(pid?" · "+BUDDIES[pid].name+" FORM "+(formIdx(bLv(pid))+1):"")}
 function shimmerAdd(fx){(fx||[]).forEach(k=>shimmer.add(k))}
 function upgradeEvo(m){if(!m.pid||m.pid!==curId()||!(m.f>m.oldF))return;setTimeout(()=>{if(curId()===m.pid)playEvolution(m.pid,m.oldF,m.f,{})},RM()?400:600)}
 
-/* v3.2c: the upgrade record (side key, 120 s). Shown by a tab only if it was open before (a reload, e.g. the SW update), the save is the migrated one,
+/* v3.2c: the upgrade record (side key, 120 s). Shown by a tab that was open before (a reload, e.g. the SW update; v3.3c D33-5b: or a fresh load within 5 s), the save is the migrated one,
    and this tab hasn't shown it (sessionStorage). Fresh installs and later reloads never see it. */
-const UPK="neonquest_v32up",UP_MS=120000;
+const UPK="neonquest_v32up",UP_MS=120000,UP_NEW=5000; /* v3.3c D33-5a/b: a non-reload load shows an upgrade toast only within UP_NEW of the record */
 function whenShown(fn){if(document.hidden){const vis=()=>{if(document.hidden)return;document.removeEventListener("visibilitychange",vis);fn()};document.addEventListener("visibilitychange",vis)}else fn()}
 /* v3.2e B3-04: the record never lingers past its lifetime. Unparsable, not an object, non-finite at, expired (age > UP_MS) or
    future-dated beyond UP_MS (age < -UP_MS): the key is removed. Read on every load path that can see it. */
@@ -325,10 +324,32 @@ function upLive(){try{const v=localStorage.getItem(UPK);if(v==null)return null;l
   const age=isObj(r)&&Number.isFinite(r.at)?Date.now()-r.at:NaN;if(!(age<=UP_MS&&age>=-UP_MS)){try{localStorage.removeItem(UPK)}catch(_){}return null}return r}catch(_){return null}}
 function upRec(){try{const nav=performance.getEntriesByType("navigation")[0];
   const r=upLive(),m=r&&r.m,age=r?Date.now()-r.at:-1;
-  if(!isObj(r)||!Number.isFinite(r.at)||age<0||age>UP_MS||!isObj(m)||sessionStorage.getItem(UPK)===String(r.at))return null;
-  if(!nav||nav.type!=="reload"){sessionStorage.setItem(UPK,String(r.at));return null} /* a tab opened after the upgrade never shows it, not even on its own reload */
+  if(!isObj(r)||!Number.isFinite(r.at)||age<0||age>UP_MS||!isObj(m))return null;
+  /* v3.3c: this tab already showed (or consumed) this upgrade. Two tabs that migrate at the same instant each write a record and the later one wins, so the
+     flag is matched by time (within UP_MS), not exactly: a tab that showed the combined toast never shows it again on its reload (D33-6). */
+  {const fl=Number(sessionStorage.getItem(UPK));if(sessionStorage.getItem(UPK)!=null&&Number.isFinite(fl)&&Math.abs(fl-r.at)<=UP_MS)return null}
+  if((!nav||nav.type!=="reload")&&age>UP_NEW){sessionStorage.setItem(UPK,String(r.at));return null} /* v3.3c D33-5b: a fresh/normal load shows it only within 5 s of the record (tabs opened together); later it never shows, not even on its own reload. Reloads (SW update) keep 120 s. */
   if(![m.oldL,m.newL,m.f].every(Number.isInteger)||(m.oldF!==null&&!Number.isInteger(m.oldF))||!Array.isArray(m.fx)||!m.fx.every(x=>typeof x==="string"))return null;
   if((m.pid||null)!==(curId()||null)||levelInfo(S.totalXp).L!==m.newL)return null;return r}catch(_){return null}}
+/* v3.3 (SPEC-v3.3 §5): one-time notice per device for the creature swap. OLD33 is used only here (ids are never displayed). */
+const N33="neonquest_v33note",OLD33={akumaru:"AKUMARU",seraphine:"SERAPHINE",gantetsu:"GANTETSU",kazekiri:"KAZEKIRI",renka:"RENKA",shimo:"SHIMO",namiko:"NAMIKO",kagerou:"KAGEROU",raika:"RAIKA",tekko:"TEKKO"};
+/* D33-5 (App Creator): tabs that load at the same moment (the SW update reloads every open tab) each show the notice once, as D32-11 for the v3.2 upgrade.
+   The tab that sets the key first writes a short-lived record (neonquest_v33up {at}, UP_MS) BEFORE the key; a reloaded tab shows it once while it is live,
+   a fresh load only within 5 s (D33-5a, v3.3c; sessionStorage flag per tab); a tab opened later never shows it. Dead records are removed
+   on any load (unparsable, not an object, non-finite at, age > UP_MS or < -UP_MS), as upLive. D33-6: never on a load that shows the v3.2 combined toast. */
+const N33R="neonquest_v33up";
+function n33Live(){try{const v=localStorage.getItem(N33R);if(v==null)return null;let r=null;try{r=JSON.parse(v)}catch(_){}
+  const age=isObj(r)&&Number.isFinite(r.at)?Date.now()-r.at:NaN;if(!(age<=UP_MS&&age>=-UP_MS)){try{localStorage.removeItem(N33R)}catch(_){}return null}return r}catch(_){return null}}
+/* per tab: sessionStorage N33R = "1" once this tab has shown the notice (set when it is really on screen) or shown the v3.2 combined toast */
+/* v3.3b V33-12e / v3.3c D33-5a (App Creator): a reloaded tab (SW update) shows it once while the record is live (<= 120 s); a fresh/normal load only
+   within 5 s of the record (tabs opened together); a tab opened later never shows it. D33-6: a load that shows the v3.2 combined toast marks this tab done. */
+function note33(ok,upShown){try{const ss=sessionStorage,done=()=>{try{ss.setItem(N33R,"1")}catch(_){}};if(upShown)done();
+  if(localStorage.getItem(N33)==null){if(ok)localStorage.setItem(N33R,JSON.stringify({at:Date.now()}));localStorage.setItem(N33,"1");n33Live();return ok?done:null}
+  const r=n33Live();if(!r||ss.getItem(N33R)!=null)return null;
+  /* v3.3c D33-5a: a load whose navigation is not a reload shows it only within UP_NEW (0..5 s) of the record being written; later this tab is marked done for good. Reloads (SW update, V33-12f) keep the 120 s window. */
+  const nav=performance.getEntriesByType("navigation")[0],age=Date.now()-r.at;if((!nav||nav.type!=="reload")&&!(age>=0&&age<=UP_NEW)){done();return null}
+  return ok?done:null}catch(_){return null}}
+function note33Text(){const id=curId();if(!id)return null;return"UPDATED TO v3.3 · "+(own(OLD33,id)?OLD33[id]+" IS NOW "+BUDDIES[id].name:"10 NEW CREATURES")}
 /* ===== init ===== */
 S=load();
 const isNew=!!S._new;delete S._new;const fromKey=S.fromKey;delete S.fromKey;
@@ -354,6 +375,10 @@ if(up32){shimmerAdd(mig32.fx);const at=pendingToast?2900:400;
  /* a tab that upgrades while hidden (e.g. reloaded in the background by the SW update) keeps the toast + scene until it is shown, so D-7's 400-1200 ms gap holds */
  const go=()=>setTimeout(()=>{toast(upgradeToast(mig32));upgradeEvo(mig32)},at);
  whenShown(go)}
-else if(S.booted&&fromKey!=="v1"&&fromKey!=="v2"&&!pendingToast){const r=upRec();if(r){try{sessionStorage.setItem(UPK,String(r.at))}catch(_){}shimmerAdd(r.m.fx);whenShown(()=>setTimeout(()=>{toast(upgradeToast(r.m));upgradeEvo(r.m)},400))}}
+let upShown=up32;
+if(up32);else if(S.booted&&fromKey!=="v1"&&fromKey!=="v2"&&!pendingToast){const r=upRec();if(r){upShown=true;try{sessionStorage.setItem(UPK,String(r.at))}catch(_){}shimmerAdd(r.m.fx);whenShown(()=>setTimeout(()=>{toast(upgradeToast(r.m));upgradeEvo(r.m)},400))}}
 else upLive();  /* v3.2e B3-04: other load paths still drop a dead record */
+/* v3.3: key absent -> set it; show only for a booted save with a partner, not a fresh/v1/v2 first run, no other toast pending (corrupt save wins),
+   and never on a load that shows the v3.2 combined upgrade toast (D33-6: one upgrade toast per load and device). Reset-all leaves the key; import never runs this. */
+{const shown=note33(!isNew&&!!S.booted&&!!S.buddy&&fromKey!=="v1"&&fromKey!=="v2"&&!pendingToast&&!upShown,upShown),t=shown&&note33Text();if(t)whenShown(()=>setTimeout(()=>{shown();toast(t)},400))}
 window.NQ={get S(){return S},levelInfo,need,total,dailySet,importText,formIdx,BUDDIES,openPicker,playEvolution,queueEvolutions,switchTab};

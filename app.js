@@ -682,7 +682,7 @@ async function importText(txt){let p;try{p=JSON.parse(txt)}catch(e){p=undefined}
  if(mg&&S.buddy){shimmerAdd(mg.fx);toast(upgradeToast(mg));upgradeEvo(mg)}else if(mg)toast(upgradeToast(mg));else toast("SAVE LOADED · LVL "+li);if(!S.buddy)openPicker("first")}
 $("impFile").onchange=async()=>{const f=$("impFile").files[0];if(!f)return;if(f.size>2e6)return importText("");importText(await f.text())};
 $("wipeBtn").onclick=async()=>{if(!await modal({title:"WIPE ALL DATA",body:"This erases your level, XP, streaks, history and side jobs on this device. It can't be undone.\n\nType WIPE to confirm.",ok:"WIPE",danger:true,expect:"WIPE"}))return;
- try{localStorage.removeItem("neonquest_v32up")}catch(_){}S=fresh();rollover(true);save();applySettings();renderAll();switchTab("quests");boot("new")};
+ try{localStorage.removeItem("neonquest_v32up");localStorage.removeItem("neonquest_v33up")}catch(_){}S=fresh();rollover(true);save();applySettings();renderAll();switchTab("quests");boot("new")};
 $("tblBtn").onclick=()=>{const t=$("tbl"),o=t.hidden;t.hidden=!o;$("tblBtn").setAttribute("aria-expanded",String(o));$("tblBtn").replaceChildren(ic(o?"caret-down":"caret-right")," LEVEL TABLE");if(o){buildTable();const me=t.querySelector(".me");if(me)t.scrollTop=me.offsetTop-80}};
 
 /* ===== tabs ===== */
